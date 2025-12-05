@@ -499,24 +499,26 @@ export default function App() {
               {photos.map((src, idx) => (
                 <div
                   key={idx}
-                  className="relative cursor-pointer group"
+                  className="relative cursor-pointer group gallery-card"
                   onClick={() => setModalPhoto({ src, index: idx })}
                 >
-                  <img
-                    src={src}
-                    alt={`photo-${idx}`}
-                    className="w-full aspect-[9/16] object-cover rounded-lg shadow-lg transition-transform duration-300 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-2 gap-2">
+                  <div className="glass-frame">
+                    <img
+                      src={src}
+                      alt={`photo-${idx}`}
+                      className="w-full aspect-[9/16] object-cover rounded-lg transition-transform duration-300 group-hover:scale-105"
+                    />
+                  </div>
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-2 gap-2">
                     <button
                       onClick={(e) => { e.stopPropagation(); downloadOne(src, idx); }}
-                      className="px-2 py-1 bg-green-500 rounded text-white text-sm font-semibold hover:bg-green-600"
+                      className="px-2 py-1 bg-emerald-500 rounded text-white text-sm font-semibold hover:bg-emerald-600"
                     >
                       ⬇️ تحميل
                     </button>
                     <button
                       onClick={(e) => { e.stopPropagation(); deleteOne(idx); }}
-                      className="px-2 py-1 bg-red-500 rounded text-white text-sm font-semibold hover:bg-red-600"
+                      className="px-2 py-1 bg-red-600 rounded text-white text-sm font-semibold hover:bg-red-700"
                     >
                       🗑 حذف
                     </button>
@@ -538,6 +540,14 @@ export default function App() {
     .text-overlay { max-width: 640px; margin: 0 auto; background: linear-gradient(180deg, rgba(6,6,23,0.42), rgba(6,6,23,0.6)); padding: 10px 14px; border-radius: 12px; box-shadow: 0 8px 30px rgba(2,6,23,0.6); border: 1px solid rgba(255,255,255,0.06); backdrop-filter: blur(6px); }
     .text-overlay p { margin: 0; font-family: 'Segoe UI', Tahoma, Arial, 'Noto Naskh Arabic', sans-serif; font-weight: 600; }
     /* removed mirror/unflip rules; video is flipped directly via inline style and overlays are positioned conditionally */
+    /* Gallery glass styles */
+    .gallery-card { border-radius: 14px; padding: 8px; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); }
+    .glass-frame { border-radius: 10px; overflow: hidden; border: 1px solid rgba(255,255,255,0.06); background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); box-shadow: 0 6px 18px rgba(2,6,23,0.45), inset 0 1px 0 rgba(255,255,255,0.02); backdrop-filter: blur(6px) saturate(120%); }
+    .gallery-card img { display:block; }
+    .gallery-card:hover { transform: translateY(-6px); transition: transform 220ms ease; }
+    .gallery-card .group-hover\:opacity-100 { transition: opacity 180ms ease; }
+    /* Modal glass */
+    .modal-glass { background: linear-gradient(180deg, rgba(6,8,23,0.6), rgba(12,14,30,0.8)); border-radius: 14px; box-shadow: 0 18px 40px rgba(2,6,23,0.7); border: 1px solid rgba(255,255,255,0.04); }
   `}</style>
       </div>
 
