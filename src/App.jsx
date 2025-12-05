@@ -184,7 +184,9 @@ export default function App() {
       ctx.scale(-1, 1);
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       try {
-        if (frameLoaded && frameImg && frameImg.complete && frameImg.naturalWidth) ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
+        if (frameLoaded && frameImg && frameImg.complete && frameImg.naturalWidth) {
+          ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
+        }
       } catch (err) {
         console.warn('Failed to draw frame image (mirrored):', err);
       }
@@ -192,7 +194,9 @@ export default function App() {
     } else {
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       try {
-        if (frameLoaded && frameImg && frameImg.complete && frameImg.naturalWidth) ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
+        if (frameLoaded && frameImg && frameImg.complete && frameImg.naturalWidth) {
+          ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
+        }
       } catch (err) {
         console.warn('Failed to draw frame image:', err);
       }
@@ -334,7 +338,7 @@ export default function App() {
       <div className="flex flex-col lg:flex-row gap-8 w-full max-w-6xl">
         {/* Camera + Buttons */}
         <div className="flex-shrink-0 w-full lg:w-80 flex flex-col items-center">
-          <div className={`relative w-72 h-128 rounded-3xl overflow-hidden shadow-2xl ${isMirrored ? 'mirror' : ''}`}>
+          <div className="relative w-72 h-128 rounded-3xl overflow-hidden shadow-2xl">
             <video
               ref={videoRef}
               autoPlay
@@ -342,7 +346,7 @@ export default function App() {
               muted
               className="w-full h-full object-cover"
               onClick={handleFocus}
-              style={{ filter: `brightness(${0.85 + brightness * 0.3})`, transition: 'filter 160ms linear' }}
+              style={{ filter: `brightness(${0.85 + brightness * 0.3})`, transition: 'filter 160ms linear', transform: isMirrored ? 'scaleX(-1)' : 'none' }}
             />
             <img
               src="/frame.png"
@@ -350,20 +354,18 @@ export default function App() {
               className="pointer-events-none absolute inset-0 w-full h-full object-cover"
               onError={(e) => (e.currentTarget.style.display = "none")}
             />
-            <div className="absolute left-4 top-4">
-              <div className="unflip">
-                <img
-                  src="/logo.jpg"
-                  alt="logo"
-                  className="w-14 h-14 object-contain rounded-lg"
-                  onError={(e) => (e.currentTarget.style.display = "none")}
-                />
-              </div>
+            <div className={isMirrored ? 'absolute right-4 top-4' : 'absolute left-4 top-4'}>
+              <img
+                src="/logo.jpg"
+                alt="logo"
+                className="w-14 h-14 object-contain rounded-lg"
+                onError={(e) => (e.currentTarget.style.display = "none")}
+              />
             </div>
             {/* Text overlay (live preview) */}
-            <div className="absolute left-4 right-4 bottom-4 z-40 pointer-events-none">
-              <div className="mx-auto max-w-full text-overlay unflip">
-                <p className="text-sm md:text-base leading-5 text-right" dir="rtl">{overlayText}</p>
+            <div className={isMirrored ? 'absolute left-4 right-4 bottom-4 z-40 pointer-events-none' : 'absolute left-4 right-4 bottom-4 z-40 pointer-events-none'}>
+              <div className={`mx-auto max-w-full text-overlay ${isMirrored ? 'text-right' : 'text-right'}`}>
+                <p className="text-sm md:text-base leading-5" dir="rtl">{overlayText}</p>
               </div>
             </div>
             {/* Small brightness control inside the frame (no rotation) */}
@@ -509,8 +511,7 @@ export default function App() {
     @media (max-width:640px) { .slider-container { width: 12px; } .slider-track { height: 160px; } }
     .text-overlay { max-width: 640px; margin: 0 auto; background: linear-gradient(180deg, rgba(6,6,23,0.42), rgba(6,6,23,0.6)); padding: 10px 14px; border-radius: 12px; box-shadow: 0 8px 30px rgba(2,6,23,0.6); border: 1px solid rgba(255,255,255,0.06); backdrop-filter: blur(6px); }
     .text-overlay p { margin: 0; font-family: 'Segoe UI', Tahoma, Arial, 'Noto Naskh Arabic', sans-serif; font-weight: 600; }
-    .mirror { transform: scaleX(-1); transform-origin: center; }
-    .unflip { transform: scaleX(-1); transform-origin: center; }
+    /* removed mirror/unflip rules; video is flipped directly via inline style and overlays are positioned conditionally */
   `}</style>
       </div>
 
