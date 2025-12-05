@@ -15,6 +15,7 @@ export default function App() {
 
   const [isTaking, setIsTaking] = useState(false);
   const [modalPhoto, setModalPhoto] = useState(null);
+  const [facingMode, setFacingMode] = useState("environment"); // الخلفية افتراضي
 
   useEffect(() => {
     try {
@@ -22,12 +23,13 @@ export default function App() {
     } catch {}
   }, [photos]);
 
+  // تشغيل الكاميرا
   useEffect(() => {
     let mounted = true;
     async function start() {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: "environment" },
+          video: { facingMode },
           audio: false,
         });
         if (!mounted) return;
@@ -38,13 +40,61 @@ export default function App() {
       }
     }
     start();
+
     return () => {
       mounted = false;
       if (videoRef.current && videoRef.current.srcObject) {
         videoRef.current.srcObject.getTracks().forEach((t) => t.stop());
       }
     };
-  }, []);
+  }, [facingMode]);
+
+  // لمس الفيديو لتفعيل الفوكس حسب مكان اللمس
+  const handleFocus = async (e) => {
+    const video = videoRef.current;
+    if (!video || !video.srcObject) return;
+    const rect = video.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width; // نسبة X
+    const y = (e.clientY - rect.top) / rect.height; // نسبة Y
+
+    const [track] = video.srcObject.getVideoTracks();
+    if (!track.getCapabilities) return;
+
+    const capabilities = track.getCapabilities();
+    const settings = track.getSettings();
+
+    const constraints = { advanced: [] };
+
+    // focus إذا متاح
+    if (capabilities.focusMode && capabilities.focusDistance) {
+      constraints.advanced.push({
+        focusMode: "manual",
+        focusDistance: capabilities.focusDistance.max * 0.5, // نص المدى
+      });
+    }
+
+    // exposure / torch
+    if (capabilities.exposureMode && capabilities.exposureCompensation) {
+      // مثلا خفيف تعديل حسب Y
+      const exposureValue =
+        capabilities.exposureCompensation.min +
+        (capabilities.exposureCompensation.max - capabilities.exposureCompensation.min) * (1 - y);
+      constraints.advanced.push({ exposureMode: "manual", exposureCompensation: exposureValue });
+    }
+
+    if (capabilities.torch) {
+      const currentTorch = track.getSettings().torch || false;
+      constraints.advanced.push({ torch: !currentTorch });
+    }
+
+    if (constraints.advanced.length > 0) {
+      try {
+        await track.applyConstraints(constraints);
+      } catch (err) {
+        console.warn("Constraints not supported:", err);
+      }
+    }
+  };
 
   const takePhoto = async () => {
     const video = videoRef.current;
@@ -61,10 +111,8 @@ export default function App() {
     canvas.height = video.videoHeight;
     const ctx = canvas.getContext("2d");
 
-    // draw video
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    // draw frame
     try {
       const frameImg = new Image();
       frameImg.src = "/frame.png";
@@ -75,7 +123,6 @@ export default function App() {
       ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
     } catch {}
 
-    // draw logo
     try {
       const logoImg = new Image();
       logoImg.src = "/logo.jpg";
@@ -133,118 +180,159 @@ export default function App() {
         صور احترافية مع فريم و لوجو — التقط، عاين، نزّل أو امسح. الصور محفوظة محليًا بأمان.
       </p>
 
-      <div className="flex flex-col lg:flex-row gap-8 w-full max-w-6xl items-start">
-        {/* Camera Section */}
-        <div className="flex-shrink-0 w-full lg:w-80">
-          <div className="relative w-full aspect-[9/16] rounded-3xl overflow-hidden shadow-2xl">
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              muted
-              className="w-full h-full object-cover"
-            />
-            <img
-              src="/frame.png"
-              alt="frame overlay"
-              className="pointer-events-none absolute inset-0 w-full h-full object-cover"
-              onError={(e) => (e.currentTarget.style.display = "none")}
-            />
-            <img
-              src="/logo.jpg"
-              alt="logo"
-              className="absolute left-4 top-4 w-20 h-20 object-contain rounded-lg"
-              onError={(e) => (e.currentTarget.style.display = "none")}
-            />
-          </div>
+<div className="flex flex-col items-center gap-8 w-full max-w-6xl">
+  <div className="w-full max-w-xs flex flex-col items-center">
+    {/* Camera Section */}
+    <div className="relative w-72 h-128 rounded-3xl overflow-hidden shadow-2xl">
+      <video
+        ref={videoRef}
+        autoPlay
+        playsInline
+        muted
+        className="w-full h-full object-cover"
+        onClick={handleFocus}
+      />
+      <img
+        src="/frame.png"
+        alt="frame overlay"
+        className="pointer-events-none absolute inset-0 w-full h-full object-cover"
+        onError={(e) => (e.currentTarget.style.display = "none")}
+      />
+      <img
+        src="/logo.jpg"
+        alt="logo"
+        className="absolute left-4 top-4 w-20 h-20 object-contain rounded-lg"
+        onError={(e) => (e.currentTarget.style.display = "none")}
+      />
+    </div>
 
-          <div className="flex justify-center mt-6">
-            <button
-              onClick={takePhoto}
-              disabled={isTaking}
-              className={`relative flex items-center justify-center w-28 h-28 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 shadow-2xl transform transition-transform active:scale-95 ${isTaking ? "animate-pulse" : "hover:scale-110"}`}
-            >
-              <div className="bg-white w-20 h-20 rounded-full flex items-center justify-center shadow-inner">
-                <span className="text-3xl">📸</span>
-              </div>
-            </button>
-          </div>
-
-          <div className="w-full mt-6 flex gap-3 justify-center">
-            <button
-              onClick={downloadAll}
-              disabled={photos.length === 0}
-              className="flex-1 px-4 py-2 bg-green-500 rounded-xl text-white font-semibold hover:opacity-90 disabled:opacity-40"
-            >
-              ⬇️ تحميل الكل
-            </button>
-            <button
-              onClick={deleteAll}
-              disabled={photos.length === 0}
-              className="flex-1 px-4 py-2 bg-red-500 rounded-xl text-white font-semibold hover:opacity-90 disabled:opacity-40"
-            >
-              🗑 حذف الكل
-            </button>
-          </div>
+    {/* Buttons under camera */}
+    <div className="flex justify-center mt-4 gap-4">
+      <button
+        onClick={() =>
+          setFacingMode(facingMode === "environment" ? "user" : "environment")
+        }
+        className="px-4 py-2 bg-blue-500 rounded-lg text-white hover:bg-blue-600"
+      >
+        🔄 اقلب الكاميرا
+      </button>
+      <button
+        onClick={takePhoto}
+        disabled={isTaking}
+        className={`relative flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 shadow-2xl transform transition-transform active:scale-95 ${
+          isTaking ? "animate-pulse" : "hover:scale-110"
+        }`}
+      >
+        <div className="bg-white w-16 h-16 rounded-full flex items-center justify-center shadow-inner">
+          <span className="text-2xl">📸</span>
         </div>
+      </button>
+    </div>
 
-        {/* Gallery Section */}
-        <section className="flex-1 w-full">
-          {photos.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-96 rounded-2xl bg-slate-800/30">
-              <span className="text-5xl mb-3">📷</span>
-              <p className="text-slate-400 text-center">ماعندكش صور بعد — ابدأ الآن!</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-4">
-              {photos.map((src, idx) => (
-                <div key={idx} className="relative cursor-pointer group" onClick={() => setModalPhoto({ src, index: idx })}>
-                  <img
-                    src={src}
-                    alt={`photo-${idx}`}
-                    className="w-full aspect-[9/16] object-cover rounded-lg shadow-lg transition-transform duration-300 group-hover:scale-105"
-                  />
+    {/* Download / Delete All */}
+    <div className="w-full mt-6 flex gap-3 justify-center">
+      <button
+        onClick={downloadAll}
+        disabled={photos.length === 0}
+        className="flex-1 px-4 py-2 bg-green-500 rounded-xl text-white font-semibold hover:opacity-90 disabled:opacity-40"
+      >
+        ⬇️ تحميل الكل
+      </button>
+      <button
+        onClick={deleteAll}
+        disabled={photos.length === 0}
+        className="flex-1 px-4 py-2 bg-red-500 rounded-xl text-white font-semibold hover:opacity-90 disabled:opacity-40"
+      >
+        🗑 حذف الكل
+      </button>
+    </div>
+  </div>
 
-                  {/* Hover Buttons */}
-                  <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-2 gap-2">
-                    <button
-                      onClick={(e) => { e.stopPropagation(); downloadOne(src, idx); }}
-                      className="px-2 py-1 bg-green-500 rounded text-white text-sm font-semibold hover:bg-green-600"
-                    >
-                      ⬇️ تحميل
-                    </button>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); deleteOne(idx); }}
-                      className="px-2 py-1 bg-red-500 rounded text-white text-sm font-semibold hover:bg-red-600"
-                    >
-                      🗑 حذف
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
+  {/* Gallery Section */}
+  <section className="flex-1 w-full mt-6">
+    {photos.length === 0 ? (
+      <div className="flex flex-col items-center justify-center h-96 rounded-2xl bg-slate-800/30">
+        <span className="text-5xl mb-3">📷</span>
+        <p className="text-slate-400 text-center">ماعندكش صور بعد — ابدأ الآن!</p>
       </div>
+    ) : (
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-4">
+        {photos.map((src, idx) => (
+          <div
+            key={idx}
+            className="relative cursor-pointer group"
+            onClick={() => setModalPhoto({ src, index: idx })}
+          >
+            <img
+              src={src}
+              alt={`photo-${idx}`}
+              className="w-full aspect-[9/16] object-cover rounded-lg shadow-lg transition-transform duration-300 group-hover:scale-105"
+            />
+
+            <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-2 gap-2">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  downloadOne(src, idx);
+                }}
+                className="px-2 py-1 bg-green-500 rounded text-white text-sm font-semibold hover:bg-green-600"
+              >
+                ⬇️ تحميل
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  deleteOne(idx);
+                }}
+                className="px-2 py-1 bg-red-500 rounded text-white text-sm font-semibold hover:bg-red-600"
+              >
+                🗑 حذف
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
+  </section>
+</div>
 
       <canvas ref={canvasRef} className="hidden" />
 
-      {/* Modal */}
       {modalPhoto && (
-        <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4" onClick={() => setModalPhoto(null)}>
-          <div className="bg-slate-900 rounded-2xl overflow-hidden max-w-3xl w-full" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+          onClick={() => setModalPhoto(null)}
+        >
+          <div
+            className="bg-slate-900 rounded-2xl overflow-hidden max-w-3xl w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="p-4 flex justify-between items-center bg-slate-800">
               <h3 className="text-white font-bold">معاينة الصورة</h3>
-              <button onClick={() => setModalPhoto(null)} className="px-3 py-1 rounded bg-slate-700 hover:bg-slate-600 text-white">✕ إغلاق</button>
+              <button
+                onClick={() => setModalPhoto(null)}
+                className="px-3 py-1 rounded bg-slate-700 hover:bg-slate-600 text-white"
+              >
+                ✕ إغلاق
+              </button>
             </div>
             <div className="p-4 bg-black flex justify-center">
               <img src={modalPhoto.src} alt="preview" className="max-h-[80vh] w-auto rounded-lg" />
             </div>
             <div className="p-4 flex gap-3">
-              <button onClick={() => downloadOne(modalPhoto.src, modalPhoto.index)} className="flex-1 px-4 py-2 bg-green-500 rounded-lg text-white font-semibold hover:opacity-90">
+              <button
+                onClick={() => downloadOne(modalPhoto.src, modalPhoto.index)}
+                className="flex-1 px-4 py-2 bg-green-500 rounded-lg text-white font-semibold hover:opacity-90"
+              >
                 ⬇️ تحميل
               </button>
-              <button onClick={() => { deleteOne(modalPhoto.index); setModalPhoto(null); }} className="flex-1 px-4 py-2 bg-red-500 rounded-lg text-white font-semibold hover:opacity-90">
+              <button
+                onClick={() => {
+                  deleteOne(modalPhoto.index);
+                  setModalPhoto(null);
+                }}
+                className="flex-1 px-4 py-2 bg-red-500 rounded-lg text-white font-semibold hover:opacity-90"
+              >
                 🗑 حذف
               </button>
             </div>
