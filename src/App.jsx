@@ -446,10 +446,10 @@ export default function App() {
               <button
                 onClick={takePhoto}
                 disabled={isTaking}
-                className={`relative flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 shadow-2xl transform transition-all active:scale-95 ${isTaking ? "animate-pulse" : "hover:scale-105"}`}
+                className={`relative flex items-center justify-center w-18 h-18 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 shadow-2xl transform transition-all active:scale-95 ${isTaking ? "animate-pulse" : "hover:scale-105"}`}
                 aria-label="Capture photo"
               >
-                <div className="bg-white w-18 h-18 rounded-full flex items-center justify-center shadow-inner" style={{ width: 64, height: 64 }}>
+                <div className="bg-white w-10 h-10 rounded-full flex items-center justify-center shadow-inner" style={{ width: 64, height: 64 }}>
                   <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                     <circle cx="12" cy="12" r="3" strokeWidth="1.6" />
                     <path strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -491,8 +491,8 @@ export default function App() {
         <section className="flex-1 w-full">
           {photos.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-96 rounded-2xl bg-slate-800/30">
-              <span className="text-5xl mb-3">📷</span>
-              <p className="text-slate-400 text-center">ماعندكش صور بعد — ابدأ الآن!</p>
+              <span className="text-5xl mb-3"></span>
+              <p className="text-slate-400 text-center">ازاي جاي يعني المسرحية منغير ماتتصور! <br /> يلا اتصور عشان ماتضربش </p>
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-4">
