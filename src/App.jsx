@@ -15,6 +15,7 @@ export default function App() {
 
   const [brightness, setBrightness] = useState(0.5);
   const sliderRef = useRef(null);
+  const overlayText = `لأَنَّ كُلَّ الَّذِينَ يَنْقَادُونَ بِرُوحِ اللهِ، فَأُولئِكَ هُمْ أَبْنَاءُ اللهِ. (رومية ٨: ١٤)`;
 
   const setBrightnessValue = (val) => {
     const v = Math.max(0, Math.min(1, val));
@@ -175,6 +176,77 @@ export default function App() {
       ctx.drawImage(logoImg, 10, 10, logoWidth, logoHeight);
     } catch { }
 
+    // Draw the overlay scripture text onto the captured image
+    try {
+      const text = overlayText;
+      if (text) {
+        ctx.save();
+        const padding = Math.round(canvas.width * 0.03);
+        const fontSize = Math.max(12, Math.round(canvas.width * 0.038));
+        ctx.font = `bold ${fontSize}px sans-serif`;
+        ctx.textBaseline = 'top';
+
+        const wrapText = (context, str, maxWidth) => {
+          const words = str.split(' ');
+          const lines = [];
+          let line = '';
+          for (let i = 0; i < words.length; i++) {
+            const testLine = line ? line + ' ' + words[i] : words[i];
+            const metrics = context.measureText(testLine);
+            if (metrics.width > maxWidth && line) {
+              lines.push(line);
+              line = words[i];
+            } else {
+              line = testLine;
+            }
+          }
+          if (line) lines.push(line);
+          return lines;
+        };
+
+        const maxTextWidth = canvas.width - padding * 2 - 20;
+        const lines = wrapText(ctx, text, maxTextWidth);
+        const lineHeight = Math.round(fontSize * 1.25);
+        const boxHeight = lines.length * lineHeight + padding * 2;
+        const boxWidth = Math.min(maxTextWidth, Math.max(...lines.map(l => ctx.measureText(l).width))) + padding * 2;
+        const boxX = 10;
+        const boxY = canvas.height - boxHeight - 10;
+
+        // rounded rectangle background
+        const roundRect = (x, y, w, h, r) => {
+          const radius = Math.min(r, w / 2, h / 2);
+          ctx.beginPath();
+          ctx.moveTo(x + radius, y);
+          ctx.arcTo(x + w, y, x + w, y + h, radius);
+          ctx.arcTo(x + w, y + h, x, y + h, radius);
+          ctx.arcTo(x, y + h, x, y, radius);
+          ctx.arcTo(x, y, x + w, y, radius);
+          ctx.closePath();
+        };
+
+        ctx.fillStyle = 'rgba(6,6,23,0.56)';
+        roundRect(boxX, boxY, boxWidth, boxHeight, 14);
+        ctx.fill();
+
+        ctx.lineWidth = Math.max(1, Math.round(canvas.width * 0.002));
+        ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+        ctx.stroke();
+
+        ctx.fillStyle = '#fff';
+        ctx.textAlign = 'right';
+        const textX = boxX + boxWidth - padding;
+        let y = boxY + padding;
+        for (const ln of lines) {
+          ctx.fillText(ln, textX, y);
+          y += lineHeight;
+        }
+
+        ctx.restore();
+      }
+    } catch (err) {
+      console.warn('Failed to draw overlay text on canvas:', err);
+    }
+
     const data = canvas.toDataURL("image/png");
     setPhotos((p) => [data, ...p]);
 
@@ -250,6 +322,12 @@ export default function App() {
               className="absolute left-4 top-4 w-20 h-20 object-contain rounded-lg"
               onError={(e) => (e.currentTarget.style.display = "none")}
             />
+            {/* Text overlay (live preview) */}
+            <div className="absolute left-4 right-4 bottom-4 z-40 pointer-events-none">
+              <div className="mx-auto max-w-full text-overlay">
+                <p className="text-sm md:text-base leading-5 text-right" dir="rtl">{overlayText}</p>
+              </div>
+            </div>
             {/* Small brightness control inside the frame (no rotation) */}
             <div className="absolute right-3 top-1/2 -translate-y-1/2 flex flex-col items-center gap-2 z-40">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-5 h-5 text-white">
@@ -391,6 +469,8 @@ export default function App() {
     .slider-thumb:active { transform: translate(-50%, -50%) scale(1.08); box-shadow: 0 10px 22px rgba(99,102,241,0.18); }
     .slider-container:active .slider-track { filter: brightness(1.02); }
     @media (max-width:640px) { .slider-container { width: 12px; } .slider-track { height: 160px; } }
+    .text-overlay { max-width: 640px; margin: 0 auto; background: linear-gradient(180deg, rgba(6,6,23,0.42), rgba(6,6,23,0.6)); padding: 10px 14px; border-radius: 12px; box-shadow: 0 8px 30px rgba(2,6,23,0.6); border: 1px solid rgba(255,255,255,0.06); backdrop-filter: blur(6px); }
+    .text-overlay p { margin: 0; font-family: 'Segoe UI', Tahoma, Arial, 'Noto Naskh Arabic', sans-serif; font-weight: 600; }
   `}</style>
       </div>
 
