@@ -429,18 +429,14 @@ export default function App() {
 
           {/* Controls: Flip + Capture (primary) */}
           <div className="relative w-full mt-4">
-            <button
-              onClick={() => setFacingMode(facingMode === "environment" ? "user" : "environment")}
-              className="absolute left-0 top-1/2 -translate-y-1/2 flex items-center justify-center p-3 bg-slate-800 hover:bg-slate-700 rounded-xl transition"
-              aria-label="Flip camera"
-            >
-              {/* clearer swap icon: arrows left/right with camera center */}
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" d="M3 12h4l-1.5-1.5M21 12h-4l1.5 1.5" />
-                <rect x="8.5" y="7.5" width="7" height="5" rx="1" strokeWidth="1.4" />
-                <circle cx="12" cy="10" r="1.4" strokeWidth="1.2" />
-              </svg>
-            </button>
+        <button
+          onClick={() => setFacingMode(facingMode === "environment" ? "user" : "environment")}
+          className="absolute top-4 right-4 p-2 bg-white/20 hover:bg-white/30 rounded-xl shadow-md transition flex items-center justify-center"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M4 4v6h6M20 20v-6h-6M4 20h16M4 4h16" />
+          </svg>
+        </button>
 
             <div className="flex justify-center">
               <button
@@ -492,7 +488,7 @@ export default function App() {
           {photos.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-96 rounded-2xl bg-slate-800/30">
               <span className="text-5xl mb-3"></span>
-              <p className="text-slate-400 text-center">ازاي جاي يعني المسرحية منغير ماتتصور! <br /> يلا اتصور عشان ماتضربش </p>
+              <p className="text-slate-400 text-center">ازاي جاي يعني المسرحية منغير ماتتصور <br /> ! يلا اتصور عشان ماتضربش </p>
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-4">
