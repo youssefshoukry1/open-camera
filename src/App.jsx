@@ -354,18 +354,19 @@ export default function App() {
               className="pointer-events-none absolute inset-0 w-full h-full object-cover"
               onError={(e) => (e.currentTarget.style.display = "none")}
             />
-            <div className="absolute left-4 top-4">
+            <div className="absolute left-4 top-4" style={{ left: 16, right: 'auto' }}>
               <img
                 src="/logo.jpg"
                 alt="logo"
                 className="w-14 h-14 object-contain rounded-lg"
+                style={{ display: 'block' }}
                 onError={(e) => (e.currentTarget.style.display = "none")}
               />
             </div>
             {/* Text overlay (live preview) */}
-            <div className="absolute right-4 bottom-4 z-40 pointer-events-none">
-              <div className="mx-auto max-w-full text-overlay">
-                <p className="text-sm md:text-base leading-5 text-right" dir="rtl">{overlayText}</p>
+            <div className="absolute right-4 bottom-4 z-40 pointer-events-none" style={{ right: 16, left: 'auto' }}>
+              <div className="mx-auto max-w-full text-overlay" style={{ margin: 0 }}>
+                <p className="text-sm md:text-base leading-5 text-right" dir="rtl" style={{ margin: 0 }}>{overlayText}</p>
               </div>
             </div>
             {/* Small brightness control inside the frame (no rotation) */}
