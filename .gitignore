@@ -1,0 +1,61 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# === Dependencies ===
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# === Testing ===
+/coverage
+
+# === Next.js ===
+/.next/
+/out/
+
+# === Production ===
+/build
+
+# === Misc ===
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+*.pem
+*.local
+
+# === Debug & Logs ===
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# === Env Files (keep sensitive data private) ===
+.env*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# === TypeScript ===
+*.tsbuildinfo
+next-env.d.ts
+
+# === Deployment (Vercel / Docker) ===
+.vercel/
+.dockerignore
+Dockerfile
+
+# === IDE / Editor settings ===
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# === OS Files ===
+*.swp
+*.swo
