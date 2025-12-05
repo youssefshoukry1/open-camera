@@ -207,7 +207,7 @@ export default function App() {
       if (logoLoaded && logoImg && logoImg.complete && logoImg.naturalWidth) {
         const logoWidth = canvas.width * 0.18;
         const logoHeight = logoWidth * ((logoImg.height && logoImg.width) ? (logoImg.height / logoImg.width) : 1);
-        const logoX = isMirrored ? canvas.width - logoWidth - 10 : 10;
+        const logoX = 10; // always left
         ctx.drawImage(logoImg, logoX, 10, logoWidth, logoHeight);
       }
     } catch (err) {
@@ -247,7 +247,7 @@ export default function App() {
         const lineHeight = Math.round(fontSize * 1.25);
         const boxHeight = lines.length * lineHeight + padding * 2;
         const boxWidth = Math.min(maxTextWidth, Math.max(...lines.map(l => ctx.measureText(l).width))) + padding * 2;
-        const boxX = isMirrored ? (canvas.width - boxWidth - 10) : 10;
+        const boxX = canvas.width - boxWidth - 10; // always right
         const boxY = canvas.height - boxHeight - 10;
 
         // rounded rectangle background
@@ -354,7 +354,7 @@ export default function App() {
               className="pointer-events-none absolute inset-0 w-full h-full object-cover"
               onError={(e) => (e.currentTarget.style.display = "none")}
             />
-            <div className={isMirrored ? 'absolute right-4 top-4' : 'absolute left-4 top-4'}>
+            <div className="absolute left-4 top-4">
               <img
                 src="/logo.jpg"
                 alt="logo"
@@ -363,9 +363,9 @@ export default function App() {
               />
             </div>
             {/* Text overlay (live preview) */}
-            <div className={isMirrored ? 'absolute left-4 right-4 bottom-4 z-40 pointer-events-none' : 'absolute left-4 right-4 bottom-4 z-40 pointer-events-none'}>
-              <div className={`mx-auto max-w-full text-overlay ${isMirrored ? 'text-right' : 'text-right'}`}>
-                <p className="text-sm md:text-base leading-5" dir="rtl">{overlayText}</p>
+            <div className="absolute right-4 bottom-4 z-40 pointer-events-none">
+              <div className="mx-auto max-w-full text-overlay">
+                <p className="text-sm md:text-base leading-5 text-right" dir="rtl">{overlayText}</p>
               </div>
             </div>
             {/* Small brightness control inside the frame (no rotation) */}
