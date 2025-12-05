@@ -13,6 +13,29 @@ export default function App() {
     }
   });
 
+  const [brightness, setBrightness] = useState(0.5);
+
+const handleBrightnessChange = (e) => {
+  const val = parseFloat(e.target.value);
+  setBrightness(val);
+
+  const video = videoRef.current;
+  if (!video || !video.srcObject) return;
+  const [track] = video.srcObject.getVideoTracks();
+  if (!track.getCapabilities) return;
+
+  const capabilities = track.getCapabilities();
+  if (!capabilities.exposureCompensation) return;
+
+  const min = capabilities.exposureCompensation.min;
+  const max = capabilities.exposureCompensation.max;
+
+  track.applyConstraints({
+    advanced: [{ exposureCompensation: min + val * (max - min) }]
+  }).catch((err) => console.warn("Exposure not supported:", err));
+};
+
+
   const [isTaking, setIsTaking] = useState(false);
   const [modalPhoto, setModalPhoto] = useState(null);
   const [facingMode, setFacingMode] = useState("environment"); // الخلفية افتراضي
@@ -168,7 +191,7 @@ const handleFocus = async (e) => {
       </p>
 
 <div className="flex flex-col items-center gap-8 w-full max-w-6xl">
-  <div className="w-full max-w-xs flex flex-col items-center">
+  <div className="w-full max-w-xs flex flex-col items-center relative">
     {/* Camera Section */}
     <div className="relative w-72 h-128 rounded-3xl overflow-hidden shadow-2xl">
       <video
@@ -177,7 +200,7 @@ const handleFocus = async (e) => {
         playsInline
         muted
         className="w-full h-full object-cover"
-        onClick={handleFocus}
+        onClick={handleFocus} // لمس للفوكس فقط
       />
       <img
         src="/frame.png"
@@ -190,6 +213,17 @@ const handleFocus = async (e) => {
         alt="logo"
         className="absolute left-4 top-4 w-20 h-20 object-contain rounded-lg"
         onError={(e) => (e.currentTarget.style.display = "none")}
+      />
+
+      {/* Brightness Slider */}
+      <input
+        type="range"
+        min={0}
+        max={1}
+        step={0.01}
+        value={brightness}
+        onChange={handleBrightnessChange}
+        className="absolute top-1/2 right-[-30px] w-28 h-2 rotate-90 origin-center accent-yellow-400"
       />
     </div>
 
@@ -215,72 +249,7 @@ const handleFocus = async (e) => {
         </div>
       </button>
     </div>
-
-    {/* Download / Delete All */}
-    <div className="w-full mt-6 flex gap-3 justify-center">
-      <button
-        onClick={downloadAll}
-        disabled={photos.length === 0}
-        className="flex-1 px-4 py-2 bg-green-500 rounded-xl text-white font-semibold hover:opacity-90 disabled:opacity-40"
-      >
-        ⬇️ تحميل الكل
-      </button>
-      <button
-        onClick={deleteAll}
-        disabled={photos.length === 0}
-        className="flex-1 px-4 py-2 bg-red-500 rounded-xl text-white font-semibold hover:opacity-90 disabled:opacity-40"
-      >
-        🗑 حذف الكل
-      </button>
-    </div>
   </div>
-
-  {/* Gallery Section */}
-  <section className="flex-1 w-full mt-6">
-    {photos.length === 0 ? (
-      <div className="flex flex-col items-center justify-center h-96 rounded-2xl bg-slate-800/30">
-        <span className="text-5xl mb-3">📷</span>
-        <p className="text-slate-400 text-center">ماعندكش صور بعد — ابدأ الآن!</p>
-      </div>
-    ) : (
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-4">
-        {photos.map((src, idx) => (
-          <div
-            key={idx}
-            className="relative cursor-pointer group"
-            onClick={() => setModalPhoto({ src, index: idx })}
-          >
-            <img
-              src={src}
-              alt={`photo-${idx}`}
-              className="w-full aspect-[9/16] object-cover rounded-lg shadow-lg transition-transform duration-300 group-hover:scale-105"
-            />
-
-            <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-2 gap-2">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  downloadOne(src, idx);
-                }}
-                className="px-2 py-1 bg-green-500 rounded text-white text-sm font-semibold hover:bg-green-600"
-              >
-                ⬇️ تحميل
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  deleteOne(idx);
-                }}
-                className="px-2 py-1 bg-red-500 rounded text-white text-sm font-semibold hover:bg-red-600"
-              >
-                🗑 حذف
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-    )}
-  </section>
 </div>
 
       <canvas ref={canvasRef} className="hidden" />
