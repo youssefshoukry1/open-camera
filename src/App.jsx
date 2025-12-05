@@ -252,10 +252,10 @@ export default function App() {
                 <path strokeWidth="1.2" d="M12 2v1.5M12 20.5V22M4.2 4.2l1.06 1.06M18.74 18.74l1.06 1.06M2 12h1.5M20.5 12H22M4.2 19.8l1.06-1.06M18.74 5.26l1.06-1.06" />
               </svg>
 
-              {/* Custom vertical slider: the visible track is narrow but the hit area is bigger for touch */}
+              {/* Custom vertical slider: small modern track + larger invisible hit area for touch */}
               <div
                 ref={sliderRef}
-                className="w-10 h-44 bg-transparent flex items-center justify-center slider-container"
+                className="w-10 h-40 bg-transparent flex items-center justify-center slider-container"
                 onPointerDown={handlePointerDown}
                 onPointerMove={handlePointerMove}
                 onPointerUp={handlePointerUp}
@@ -264,35 +264,76 @@ export default function App() {
                 onTouchMove={(e) => { e.preventDefault(); updateFromPointer(e.touches[0].clientY, sliderRef.current); }}
                 onTouchEnd={(e) => { /* noop - pointer handlers handle release */ }}
               >
-                <div className="relative w-3 h-full rounded-full slider-track">
+                <div className="relative w-1.5 h-full rounded-full slider-track">
                   <div
                     className="absolute slider-thumb"
-                    style={{ left: '50%', top: `${(1 - brightness) * 100}%`, transform: 'translate(-50%, -50%)', width: 18, height: 18 }}
+                    role="slider"
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-valuenow={Math.round(brightness * 100)}
+                    style={{ left: '50%', top: `${(1 - brightness) * 100}%`, transform: 'translate(-50%, -50%)', width: 14, height: 14 }}
                   />
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Buttons */}
-          <div className="flex justify-center mt-4 gap-4">
+          {/* Controls: Flip + Capture (primary) */}
+          <div className="relative w-full mt-4">
             <button
-              onClick={() =>
-                setFacingMode(facingMode === "environment" ? "user" : "environment")
-              }
-              className="px-4 py-2 bg-blue-500 rounded-lg text-white hover:bg-blue-600"
+              onClick={() => setFacingMode(facingMode === "environment" ? "user" : "environment")}
+              className="absolute left-0 top-1/2 -translate-y-1/2 flex items-center justify-center p-3 bg-slate-800 hover:bg-slate-700 rounded-xl transition"
+              aria-label="Flip camera"
             >
-              🔄 اقلب الكاميرا
+              {/* clearer swap icon: arrows left/right with camera center */}
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" d="M3 12h4l-1.5-1.5M21 12h-4l1.5 1.5" />
+                <rect x="8.5" y="7.5" width="7" height="5" rx="1" strokeWidth="1.4" />
+                <circle cx="12" cy="10" r="1.4" strokeWidth="1.2" />
+              </svg>
             </button>
+
+            <div className="flex justify-center">
+              <button
+                onClick={takePhoto}
+                disabled={isTaking}
+                className={`relative flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 shadow-2xl transform transition-all active:scale-95 ${isTaking ? "animate-pulse" : "hover:scale-105"}`}
+                aria-label="Capture photo"
+              >
+                <div className="bg-white w-18 h-18 rounded-full flex items-center justify-center shadow-inner" style={{ width: 64, height: 64 }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <circle cx="12" cy="12" r="3" strokeWidth="1.6" />
+                    <path strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          {/* Secondary actions under the capture button */}
+          <div className="flex flex-col items-center gap-2 mt-3">
             <button
-              onClick={takePhoto}
-              disabled={isTaking}
-              className={`relative flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 shadow-2xl transform transition-transform active:scale-95 ${isTaking ? "animate-pulse" : "hover:scale-110"
-                }`}
+              onClick={downloadAll}
+              disabled={photos.length === 0}
+              className="w-40 flex items-center justify-center gap-2 px-3 py-2 bg-white/5 hover:bg-white/10 disabled:opacity-40 rounded-lg border border-white/6 text-sm text-white transition"
+              aria-disabled={photos.length === 0}
             >
-              <div className="bg-white w-16 h-16 rounded-full flex items-center justify-center shadow-inner">
-                <span className="text-2xl">📸</span>
-              </div>
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
+              </svg>
+              <span className="text-sm">تحميل الكل</span>
+            </button>
+
+            <button
+              onClick={deleteAll}
+              disabled={photos.length === 0}
+              className="w-40 flex items-center justify-center gap-2 px-3 py-2 bg-red-600 hover:bg-red-700 disabled:opacity-40 rounded-lg text-sm text-white transition"
+              aria-disabled={photos.length === 0}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" d="M6 7h12M10 11v6m4-6v6M9 7l1-3h4l1 3" />
+              </svg>
+              <span className="text-sm">حذف الكل</span>
             </button>
           </div>
         </div>
@@ -337,12 +378,13 @@ export default function App() {
           )}
         </section>
 
-        {/* brightness control replaced: small inline slider styles */}
+        {/* brightness control replaced: modern compact slider styles */}
         <style>{`
     .slider-container { touch-action: none; -webkit-user-select:none; user-select:none; }
-    .slider-track { background: linear-gradient(to top, rgba(239,68,68,0.95), rgba(245,158,11,0.95)); box-shadow: inset 0 1px 0 rgba(255,255,255,0.06); border-radius:999px; }
-    .slider-thumb { position: absolute; left:50%; border-radius:50%; background: linear-gradient(180deg,#ffffff,#f3f4f6); box-shadow: 0 8px 20px rgba(0,0,0,0.45); transition: top 120ms cubic-bezier(.2,.9,.3,1), transform 80ms ease; }
-    .slider-thumb:active { transform: translate(-50%, -50%) scale(1.06); }
+    .slider-track { background: linear-gradient(to top, #06b6d4 0%, #6366f1 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.04); border-radius:999px; width:6px; margin:0 auto; }
+    .slider-thumb { position: absolute; left:50%; border-radius:50%; background: linear-gradient(180deg,#ffffff,#eef2ff); box-shadow: 0 6px 14px rgba(0,0,0,0.35); transition: top 130ms cubic-bezier(.2,.9,.3,1), transform 110ms ease; border: 2px solid rgba(99,102,241,0.12); }
+    .slider-thumb:active { transform: translate(-50%, -50%) scale(1.08); box-shadow: 0 10px 22px rgba(99,102,241,0.18); }
+    .slider-container:active .slider-track { filter: brightness(1.02); }
     @media (max-width:640px) { .slider-container { width: 12px; } .slider-track { height: 160px; } }
   `}</style>
       </div>
