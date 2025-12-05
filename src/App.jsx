@@ -70,6 +70,7 @@ export default function App() {
   const [isTaking, setIsTaking] = useState(false);
   const [modalPhoto, setModalPhoto] = useState(null);
   const [facingMode, setFacingMode] = useState("environment"); // الخلفية افتراضي
+  const isMirrored = facingMode === 'user';
 
   useEffect(() => {
     try {
@@ -151,32 +152,65 @@ export default function App() {
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     const ctx = canvas.getContext("2d");
-
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
+    // load frame and logo first so we can composite consistently
+    let frameImg = null;
+    let frameLoaded = false;
     try {
-      const frameImg = new Image();
+      frameImg = new Image();
       frameImg.src = "/frame.png";
       await new Promise((res) => {
         frameImg.onload = () => res(true);
         frameImg.onerror = () => res(false);
       });
-      ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
+      frameLoaded = true;
     } catch { }
 
+    let logoImg = null;
+    let logoLoaded = false;
     try {
-      const logoImg = new Image();
+      logoImg = new Image();
       logoImg.src = "/logo.jpg";
       await new Promise((res) => {
         logoImg.onload = () => res(true);
         logoImg.onerror = () => res(false);
       });
-      const logoWidth = canvas.width * 0.18;
-      const logoHeight = logoWidth * (logoImg.height / logoImg.width);
-      ctx.drawImage(logoImg, 10, 10, logoWidth, logoHeight);
+      logoLoaded = true;
     } catch { }
 
-    // Draw the overlay scripture text onto the captured image
+    // draw video (mirrored for front camera) and frame
+    if (isMirrored) {
+      ctx.save();
+      ctx.translate(canvas.width, 0);
+      ctx.scale(-1, 1);
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      try {
+        if (frameLoaded && frameImg && frameImg.complete && frameImg.naturalWidth) ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
+      } catch (err) {
+        console.warn('Failed to draw frame image (mirrored):', err);
+      }
+      ctx.restore();
+    } else {
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      try {
+        if (frameLoaded && frameImg && frameImg.complete && frameImg.naturalWidth) ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
+      } catch (err) {
+        console.warn('Failed to draw frame image:', err);
+      }
+    }
+
+    // draw logo positioned to match preview (left for back camera, right for front)
+    try {
+      if (logoLoaded && logoImg && logoImg.complete && logoImg.naturalWidth) {
+        const logoWidth = canvas.width * 0.18;
+        const logoHeight = logoWidth * ((logoImg.height && logoImg.width) ? (logoImg.height / logoImg.width) : 1);
+        const logoX = isMirrored ? canvas.width - logoWidth - 10 : 10;
+        ctx.drawImage(logoImg, logoX, 10, logoWidth, logoHeight);
+      }
+    } catch (err) {
+      console.warn('Failed to draw logo image on canvas:', err);
+    }
+
+    // Draw the overlay scripture text onto the captured image (position respects mirroring)
     try {
       const text = overlayText;
       if (text) {
@@ -209,7 +243,7 @@ export default function App() {
         const lineHeight = Math.round(fontSize * 1.25);
         const boxHeight = lines.length * lineHeight + padding * 2;
         const boxWidth = Math.min(maxTextWidth, Math.max(...lines.map(l => ctx.measureText(l).width))) + padding * 2;
-        const boxX = 10;
+        const boxX = isMirrored ? (canvas.width - boxWidth - 10) : 10;
         const boxY = canvas.height - boxHeight - 10;
 
         // rounded rectangle background
@@ -300,7 +334,7 @@ export default function App() {
       <div className="flex flex-col lg:flex-row gap-8 w-full max-w-6xl">
         {/* Camera + Buttons */}
         <div className="flex-shrink-0 w-full lg:w-80 flex flex-col items-center">
-          <div className="relative w-72 h-128 rounded-3xl overflow-hidden shadow-2xl">
+          <div className={`relative w-72 h-128 rounded-3xl overflow-hidden shadow-2xl ${isMirrored ? 'mirror' : ''}`}>
             <video
               ref={videoRef}
               autoPlay
@@ -316,15 +350,19 @@ export default function App() {
               className="pointer-events-none absolute inset-0 w-full h-full object-cover"
               onError={(e) => (e.currentTarget.style.display = "none")}
             />
-            <img
-              src="/logo.jpg"
-              alt="logo"
-              className="absolute left-4 top-4 w-20 h-20 object-contain rounded-lg"
-              onError={(e) => (e.currentTarget.style.display = "none")}
-            />
+            <div className="absolute left-4 top-4">
+              <div className="unflip">
+                <img
+                  src="/logo.jpg"
+                  alt="logo"
+                  className="w-14 h-14 object-contain rounded-lg"
+                  onError={(e) => (e.currentTarget.style.display = "none")}
+                />
+              </div>
+            </div>
             {/* Text overlay (live preview) */}
             <div className="absolute left-4 right-4 bottom-4 z-40 pointer-events-none">
-              <div className="mx-auto max-w-full text-overlay">
+              <div className="mx-auto max-w-full text-overlay unflip">
                 <p className="text-sm md:text-base leading-5 text-right" dir="rtl">{overlayText}</p>
               </div>
             </div>
@@ -471,6 +509,8 @@ export default function App() {
     @media (max-width:640px) { .slider-container { width: 12px; } .slider-track { height: 160px; } }
     .text-overlay { max-width: 640px; margin: 0 auto; background: linear-gradient(180deg, rgba(6,6,23,0.42), rgba(6,6,23,0.6)); padding: 10px 14px; border-radius: 12px; box-shadow: 0 8px 30px rgba(2,6,23,0.6); border: 1px solid rgba(255,255,255,0.06); backdrop-filter: blur(6px); }
     .text-overlay p { margin: 0; font-family: 'Segoe UI', Tahoma, Arial, 'Noto Naskh Arabic', sans-serif; font-weight: 600; }
+    .mirror { transform: scaleX(-1); transform-origin: center; }
+    .unflip { transform: scaleX(-1); transform-origin: center; }
   `}</style>
       </div>
 
