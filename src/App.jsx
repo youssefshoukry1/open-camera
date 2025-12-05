@@ -14,26 +14,56 @@ export default function App() {
   });
 
   const [brightness, setBrightness] = useState(0.5);
+  const sliderRef = useRef(null);
 
-const handleBrightnessChange = (e) => {
-  const val = parseFloat(e.target.value);
-  setBrightness(val);
+  const setBrightnessValue = (val) => {
+    const v = Math.max(0, Math.min(1, val));
+    setBrightness(v);
 
-  const video = videoRef.current;
-  if (!video || !video.srcObject) return;
-  const [track] = video.srcObject.getVideoTracks();
-  if (!track.getCapabilities) return;
+    const video = videoRef.current;
+    if (!video || !video.srcObject) return;
+    const [track] = video.srcObject.getVideoTracks();
+    if (!track || !track.getCapabilities) return;
 
-  const capabilities = track.getCapabilities();
-  if (!capabilities.exposureCompensation) return;
+    const capabilities = track.getCapabilities();
+    if (!capabilities.exposureCompensation) return;
 
-  const min = capabilities.exposureCompensation.min;
-  const max = capabilities.exposureCompensation.max;
+    const min = capabilities.exposureCompensation.min;
+    const max = capabilities.exposureCompensation.max;
 
-  track.applyConstraints({
-    advanced: [{ exposureCompensation: min + val * (max - min) }]
-  }).catch((err) => console.warn("Exposure not supported:", err));
-};
+    track.applyConstraints({
+      advanced: [{ exposureCompensation: min + v * (max - min) }]
+    }).catch((err) => console.warn("Exposure not supported:", err));
+  };
+
+  const handleBrightnessChange = (e) => {
+    const val = parseFloat(e.target.value);
+    setBrightnessValue(val);
+  };
+
+  const updateFromPointer = (clientY, pointerTarget) => {
+    const el = sliderRef.current || pointerTarget;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const y = clientY - rect.top;
+    const pct = 1 - y / rect.height;
+    setBrightnessValue(pct);
+  };
+
+  const handlePointerDown = (e) => {
+    e.preventDefault();
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+    updateFromPointer(e.clientY, e.currentTarget);
+  };
+
+  const handlePointerMove = (e) => {
+    if (e.pressure === 0 && e.buttons === 0) return;
+    updateFromPointer(e.clientY, e.currentTarget);
+  };
+
+  const handlePointerUp = (e) => {
+    try { e.currentTarget.releasePointerCapture?.(e.pointerId); } catch { }
+  };
 
 
   const [isTaking, setIsTaking] = useState(false);
@@ -43,7 +73,7 @@ const handleBrightnessChange = (e) => {
   useEffect(() => {
     try {
       localStorage.setItem("photos", JSON.stringify(photos));
-    } catch {}
+    } catch { }
   }, [photos]);
 
   // تشغيل الكاميرا
@@ -73,38 +103,38 @@ const handleBrightnessChange = (e) => {
   }, [facingMode]);
 
   // لمس الفيديو لتفعيل الفوكس حسب مكان اللمس
-const handleFocus = async (e) => {
-  const video = videoRef.current;
-  if (!video || !video.srcObject) return;
+  const handleFocus = async (e) => {
+    const video = videoRef.current;
+    if (!video || !video.srcObject) return;
 
-  const rect = video.getBoundingClientRect();
-  const x = (e.clientX - rect.left) / rect.width;
-  const y = (e.clientY - rect.top) / rect.height;
+    const rect = video.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width;
+    const y = (e.clientY - rect.top) / rect.height;
 
-  const [track] = video.srcObject.getVideoTracks();
-  if (!track.getCapabilities) return;
+    const [track] = video.srcObject.getVideoTracks();
+    if (!track.getCapabilities) return;
 
-  const capabilities = track.getCapabilities();
+    const capabilities = track.getCapabilities();
 
-  const constraints = { advanced: [] };
+    const constraints = { advanced: [] };
 
-  // الفوكس بس
-  if (capabilities.focusMode && capabilities.focusDistance) {
-    constraints.advanced.push({
-      focusMode: "manual",
-      focusDistance: capabilities.focusDistance.max * 0.5, // نص المدى أو ممكن تخليه حسب y
-    });
-  }
-
-  // **شيلنا الـ exposure والـ torch التلقائي**
-  if (constraints.advanced.length > 0) {
-    try {
-      await track.applyConstraints(constraints);
-    } catch (err) {
-      console.warn("Constraints not supported:", err);
+    // الفوكس بس
+    if (capabilities.focusMode && capabilities.focusDistance) {
+      constraints.advanced.push({
+        focusMode: "manual",
+        focusDistance: capabilities.focusDistance.max * 0.5, // نص المدى أو ممكن تخليه حسب y
+      });
     }
-  }
-};
+
+    // **شيلنا الـ exposure والـ torch التلقائي**
+    if (constraints.advanced.length > 0) {
+      try {
+        await track.applyConstraints(constraints);
+      } catch (err) {
+        console.warn("Constraints not supported:", err);
+      }
+    }
+  };
 
   const takePhoto = async () => {
     const video = videoRef.current;
@@ -131,7 +161,7 @@ const handleFocus = async (e) => {
         frameImg.onerror = () => res(false);
       });
       ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
-    } catch {}
+    } catch { }
 
     try {
       const logoImg = new Image();
@@ -143,7 +173,7 @@ const handleFocus = async (e) => {
       const logoWidth = canvas.width * 0.18;
       const logoHeight = logoWidth * (logoImg.height / logoImg.width);
       ctx.drawImage(logoImg, 10, 10, logoWidth, logoHeight);
-    } catch {}
+    } catch { }
 
     const data = canvas.toDataURL("image/png");
     setPhotos((p) => [data, ...p]);
@@ -178,7 +208,7 @@ const handleFocus = async (e) => {
     setModalPhoto(null);
     try {
       localStorage.removeItem("photos");
-    } catch {}
+    } catch { }
   };
 
   return (
@@ -190,117 +220,132 @@ const handleFocus = async (e) => {
         صور احترافية مع فريم و لوجو — التقط، عاين، نزّل أو امسح. الصور محفوظة محليًا بأمان.
       </p>
 
-<div className="flex flex-col lg:flex-row gap-8 w-full max-w-6xl">
-  {/* Camera + Buttons */}
-  <div className="flex-shrink-0 w-full lg:w-80 flex flex-col items-center">
-<div className="relative w-72 h-128 rounded-3xl overflow-hidden shadow-2xl">
-  <video
-    ref={videoRef}
-    autoPlay
-    playsInline
-    muted
-    className="w-full h-full object-cover"
-    onClick={handleFocus}
-  />
-  <img
-    src="/frame.png"
-    alt="frame overlay"
-    className="pointer-events-none absolute inset-0 w-full h-full object-cover"
-  />
-  <img
-    src="/logo.jpg"
-    alt="logo"
-    className="absolute left-4 top-4 w-20 h-20 object-contain rounded-lg"
-  />
-
-  {/* Brightness slider داخل الكاميرا */}
-  <input
-    type="range"
-    min={0}
-    max={1}
-    step={0.01}
-    value={brightness}
-    onChange={handleBrightnessChange}
-    className="absolute top-2 bottom-2 right-2 w-2 h-full rotate-[-90deg] origin-center accent-yellow-400"
-  />
-</div>
-
-
-    {/* Buttons */}
-    <div className="flex justify-center mt-4 gap-4">
-      <button
-        onClick={() =>
-          setFacingMode(facingMode === "environment" ? "user" : "environment")
-        }
-        className="px-4 py-2 bg-blue-500 rounded-lg text-white hover:bg-blue-600"
-      >
-        🔄 اقلب الكاميرا
-      </button>
-      <button
-        onClick={takePhoto}
-        disabled={isTaking}
-        className={`relative flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 shadow-2xl transform transition-transform active:scale-95 ${
-          isTaking ? "animate-pulse" : "hover:scale-110"
-        }`}
-      >
-        <div className="bg-white w-16 h-16 rounded-full flex items-center justify-center shadow-inner">
-          <span className="text-2xl">📸</span>
-        </div>
-      </button>
-    </div>
-  </div>
-
-  {/* Gallery */}
-  <section className="flex-1 w-full">
-    {photos.length === 0 ? (
-      <div className="flex flex-col items-center justify-center h-96 rounded-2xl bg-slate-800/30">
-        <span className="text-5xl mb-3">📷</span>
-        <p className="text-slate-400 text-center">ماعندكش صور بعد — ابدأ الآن!</p>
-      </div>
-    ) : (
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-4">
-        {photos.map((src, idx) => (
-          <div
-            key={idx}
-            className="relative cursor-pointer group"
-            onClick={() => setModalPhoto({ src, index: idx })}
-          >
-            <img
-              src={src}
-              alt={`photo-${idx}`}
-              className="w-full aspect-[9/16] object-cover rounded-lg shadow-lg transition-transform duration-300 group-hover:scale-105"
+      <div className="flex flex-col lg:flex-row gap-8 w-full max-w-6xl">
+        {/* Camera + Buttons */}
+        <div className="flex-shrink-0 w-full lg:w-80 flex flex-col items-center">
+          <div className="relative w-72 h-128 rounded-3xl overflow-hidden shadow-2xl">
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              className="w-full h-full object-cover"
+              onClick={handleFocus}
+              style={{ filter: `brightness(${0.85 + brightness * 0.3})` }}
             />
-            <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-2 gap-2">
-              <button
-                onClick={(e) => { e.stopPropagation(); downloadOne(src, idx); }}
-                className="px-2 py-1 bg-green-500 rounded text-white text-sm font-semibold hover:bg-green-600"
+            <img
+              src="/frame.png"
+              alt="frame overlay"
+              className="pointer-events-none absolute inset-0 w-full h-full object-cover"
+              onError={(e) => (e.currentTarget.style.display = "none")}
+            />
+            <img
+              src="/logo.jpg"
+              alt="logo"
+              className="absolute left-4 top-4 w-20 h-20 object-contain rounded-lg"
+              onError={(e) => (e.currentTarget.style.display = "none")}
+            />
+            {/* Small brightness control inside the frame (no rotation) */}
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex flex-col items-center gap-2 z-40">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-5 h-5 text-white">
+                <circle cx="12" cy="12" r="3.5" strokeWidth="1.5" />
+                <path strokeWidth="1.2" d="M12 2v1.5M12 20.5V22M4.2 4.2l1.06 1.06M18.74 18.74l1.06 1.06M2 12h1.5M20.5 12H22M4.2 19.8l1.06-1.06M18.74 5.26l1.06-1.06" />
+              </svg>
+
+              {/* Custom vertical slider: the visible track is narrow but the hit area is bigger for touch */}
+              <div
+                ref={sliderRef}
+                className="w-8 h-36 bg-transparent flex items-center justify-center"
+                onPointerDown={handlePointerDown}
+                onPointerMove={handlePointerMove}
+                onPointerUp={handlePointerUp}
+                onPointerCancel={handlePointerUp}
+                onTouchStart={(e) => { e.preventDefault(); updateFromPointer(e.touches[0].clientY, sliderRef.current); }}
+                onTouchMove={(e) => { e.preventDefault(); updateFromPointer(e.touches[0].clientY, sliderRef.current); }}
+                onTouchEnd={(e) => { /* noop - pointer handlers handle release */ }}
               >
-                ⬇️ تحميل
-              </button>
-              <button
-                onClick={(e) => { e.stopPropagation(); deleteOne(idx); }}
-                className="px-2 py-1 bg-red-500 rounded text-white text-sm font-semibold hover:bg-red-600"
-              >
-                🗑 حذف
-              </button>
+                <div className="relative w-2 h-full rounded-full bg-gradient-to-t from-red-500 to-yellow-400">
+                  <div
+                    className="absolute left-1/2 -translate-x-1/2 bg-white rounded-full shadow-lg"
+                    style={{ width: 18, height: 18, bottom: `${brightness * 100}%`, transform: 'translateY(50%)' }}
+                  />
+                </div>
+              </div>
             </div>
           </div>
-        ))}
-      </div>
-    )}
-  </section>
 
-  {/* Brightness Slider fixed */}
-  <input
-    type="range"
-    min={0}
-    max={1}
-    step={0.01}
-    value={brightness}
-    onChange={handleBrightnessChange}
-    className="fixed top-1/2 right-4 w-32 h-2 -rotate-90 origin-center accent-yellow-400 z-50"
-  />
-</div>
+          {/* Buttons */}
+          <div className="flex justify-center mt-4 gap-4">
+            <button
+              onClick={() =>
+                setFacingMode(facingMode === "environment" ? "user" : "environment")
+              }
+              className="px-4 py-2 bg-blue-500 rounded-lg text-white hover:bg-blue-600"
+            >
+              🔄 اقلب الكاميرا
+            </button>
+            <button
+              onClick={takePhoto}
+              disabled={isTaking}
+              className={`relative flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 shadow-2xl transform transition-transform active:scale-95 ${isTaking ? "animate-pulse" : "hover:scale-110"
+                }`}
+            >
+              <div className="bg-white w-16 h-16 rounded-full flex items-center justify-center shadow-inner">
+                <span className="text-2xl">📸</span>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        {/* Gallery */}
+        <section className="flex-1 w-full">
+          {photos.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-96 rounded-2xl bg-slate-800/30">
+              <span className="text-5xl mb-3">📷</span>
+              <p className="text-slate-400 text-center">ماعندكش صور بعد — ابدأ الآن!</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-4">
+              {photos.map((src, idx) => (
+                <div
+                  key={idx}
+                  className="relative cursor-pointer group"
+                  onClick={() => setModalPhoto({ src, index: idx })}
+                >
+                  <img
+                    src={src}
+                    alt={`photo-${idx}`}
+                    className="w-full aspect-[9/16] object-cover rounded-lg shadow-lg transition-transform duration-300 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-2 gap-2">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); downloadOne(src, idx); }}
+                      className="px-2 py-1 bg-green-500 rounded text-white text-sm font-semibold hover:bg-green-600"
+                    >
+                      ⬇️ تحميل
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); deleteOne(idx); }}
+                      className="px-2 py-1 bg-red-500 rounded text-white text-sm font-semibold hover:bg-red-600"
+                    >
+                      🗑 حذف
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* brightness control replaced: small inline slider styles */}
+        <style>{`
+    .vslider { -webkit-appearance: none; appearance: none; width: 6px; height: 140px; background: linear-gradient(to top,#ef4444,#f59e0b); border-radius:999px; }
+    .vslider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 22px; height: 22px; background:#fff; border-radius:50%; box-shadow:0 6px 12px rgba(0,0,0,0.45); margin-top: -8px; }
+    .vslider::-moz-range-thumb { width:22px; height:22px; background:#fff; border-radius:50%; box-shadow:0 6px 12px rgba(0,0,0,0.45); }
+    .vslider:focus{ outline:none; }
+    @media (max-width:640px) { .vslider { height: 160px; } }
+  `}</style>
+      </div>
 
 
       <canvas ref={canvasRef} className="hidden" />
