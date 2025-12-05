@@ -187,22 +187,25 @@ export default function App() {
       logoLoaded = true;
     } catch { }
 
-    // draw the visible portion of the video (object-fit: cover behavior)
+    // draw the visible portion of the video (object-fit: cover behavior) by computing how the video is rendered
     try {
       const vW = video.videoWidth;
       const vH = video.videoHeight;
-      const containerAspect = dw / dh;
-      const videoAspect = vW / vH;
-      let sx = 0, sy = 0, sWidth = vW, sHeight = vH;
-      if (videoAspect > containerAspect) {
-        // video is wider -> crop left/right
-        sWidth = Math.round(vH * containerAspect);
-        sx = Math.round((vW - sWidth) / 2);
-      } else if (videoAspect < containerAspect) {
-        // video is taller -> crop top/bottom
-        sHeight = Math.round(vW / containerAspect);
-        sy = Math.round((vH - sHeight) / 2);
-      }
+      // how the video is rendered on screen
+      const rv = video.getBoundingClientRect();
+      const rvW = rv.width;
+      const rvH = rv.height;
+
+      const scale = Math.max(rvW / vW, rvH / vH);
+      const renderedW = vW * scale;
+      const renderedH = vH * scale;
+      const offsetX = (renderedW - rvW) / 2;
+      const offsetY = (renderedH - rvH) / 2;
+
+      const sx = offsetX / scale;
+      const sy = offsetY / scale;
+      const sWidth = rvW / scale;
+      const sHeight = rvH / scale;
 
       if (isMirrored) {
         ctx.save();
@@ -220,7 +223,7 @@ export default function App() {
         }
       }
     } catch (err) {
-      console.warn('Failed to draw video/frame to canvas:', err);
+      console.warn('Failed to draw video/frame to canvas (cover computation):', err);
     }
 
     // draw logo positioned to match preview (left for back camera, right for front)
@@ -360,7 +363,7 @@ export default function App() {
       <div className="flex flex-col lg:flex-row gap-8 w-full max-w-6xl">
         {/* Camera + Buttons */}
         <div className="flex-shrink-0 w-full lg:w-80 flex flex-col items-center">
-          <div className="relative w-72 h-128 rounded-3xl overflow-hidden shadow-2xl">
+          <div ref={cameraWrapRef} className="relative w-72 h-128 rounded-3xl overflow-hidden shadow-2xl">
             <video
               ref={videoRef}
               autoPlay
