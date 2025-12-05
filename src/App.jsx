@@ -50,51 +50,38 @@ export default function App() {
   }, [facingMode]);
 
   // لمس الفيديو لتفعيل الفوكس حسب مكان اللمس
-  const handleFocus = async (e) => {
-    const video = videoRef.current;
-    if (!video || !video.srcObject) return;
-    const rect = video.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width; // نسبة X
-    const y = (e.clientY - rect.top) / rect.height; // نسبة Y
+const handleFocus = async (e) => {
+  const video = videoRef.current;
+  if (!video || !video.srcObject) return;
 
-    const [track] = video.srcObject.getVideoTracks();
-    if (!track.getCapabilities) return;
+  const rect = video.getBoundingClientRect();
+  const x = (e.clientX - rect.left) / rect.width;
+  const y = (e.clientY - rect.top) / rect.height;
 
-    const capabilities = track.getCapabilities();
-    const settings = track.getSettings();
+  const [track] = video.srcObject.getVideoTracks();
+  if (!track.getCapabilities) return;
 
-    const constraints = { advanced: [] };
+  const capabilities = track.getCapabilities();
 
-    // focus إذا متاح
-    if (capabilities.focusMode && capabilities.focusDistance) {
-      constraints.advanced.push({
-        focusMode: "manual",
-        focusDistance: capabilities.focusDistance.max * 0.5, // نص المدى
-      });
+  const constraints = { advanced: [] };
+
+  // الفوكس بس
+  if (capabilities.focusMode && capabilities.focusDistance) {
+    constraints.advanced.push({
+      focusMode: "manual",
+      focusDistance: capabilities.focusDistance.max * 0.5, // نص المدى أو ممكن تخليه حسب y
+    });
+  }
+
+  // **شيلنا الـ exposure والـ torch التلقائي**
+  if (constraints.advanced.length > 0) {
+    try {
+      await track.applyConstraints(constraints);
+    } catch (err) {
+      console.warn("Constraints not supported:", err);
     }
-
-    // exposure / torch
-    if (capabilities.exposureMode && capabilities.exposureCompensation) {
-      // مثلا خفيف تعديل حسب Y
-      const exposureValue =
-        capabilities.exposureCompensation.min +
-        (capabilities.exposureCompensation.max - capabilities.exposureCompensation.min) * (1 - y);
-      constraints.advanced.push({ exposureMode: "manual", exposureCompensation: exposureValue });
-    }
-
-    if (capabilities.torch) {
-      const currentTorch = track.getSettings().torch || false;
-      constraints.advanced.push({ torch: !currentTorch });
-    }
-
-    if (constraints.advanced.length > 0) {
-      try {
-        await track.applyConstraints(constraints);
-      } catch (err) {
-        console.warn("Constraints not supported:", err);
-      }
-    }
-  };
+  }
+};
 
   const takePhoto = async () => {
     const video = videoRef.current;
