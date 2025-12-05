@@ -69,6 +69,7 @@ export default function App() {
   const [isTaking, setIsTaking] = useState(false);
   const [modalPhoto, setModalPhoto] = useState(null);
   const [facingMode, setFacingMode] = useState("environment"); // الخلفية افتراضي
+  const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
     try {
@@ -193,20 +194,80 @@ export default function App() {
     if (modalPhoto && modalPhoto.index === index) setModalPhoto(null);
   };
 
-  const downloadAll = () => {
-    // Stagger downloads slightly and append anchors to DOM to improve reliability
-    photos.forEach((d, i) => {
-      setTimeout(() => {
-        const a = document.createElement("a");
-        a.href = d;
-        a.download = `photo_${i + 1}.png`;
-        // append so some browsers accept the click
-        document.body.appendChild(a);
-        a.click();
-        // cleanup
-        a.remove();
-      }, i * 180);
-    });
+  const downloadAll = async () => {
+    if (!photos || photos.length === 0) return;
+    // If only one photo, trigger normal download
+    if (photos.length === 1) {
+      downloadOne(photos[0], 0);
+      return;
+    }
+
+    setDownloading(true);
+    try {
+      // Try to import JSZip from the local dependency first
+      let JSZipLib = null;
+      try {
+        const mod = await import('jszip');
+        JSZipLib = mod.default || mod;
+      } catch (e) {
+        // Fallback: load JSZip from CDN into window.JSZip
+        if (!window.JSZip) {
+          await new Promise((res, rej) => {
+            const s = document.createElement('script');
+            s.src = 'https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js';
+            s.onload = () => res(true);
+            s.onerror = () => rej(new Error('Failed to load JSZip from CDN'));
+            document.head.appendChild(s);
+          });
+        }
+        JSZipLib = window.JSZip;
+      }
+
+      if (!JSZipLib) throw new Error('JSZip not available');
+
+      const zip = new JSZipLib();
+
+      // Convert dataURLs to binary and add to zip
+      photos.forEach((d, i) => {
+        try {
+          const parts = d.split(',');
+          const mime = (parts[0].match(/data:(.*);base64/) || [])[1] || 'image/png';
+          const b64 = parts[1] || '';
+          const binary = atob(b64);
+          const len = binary.length;
+          const u8 = new Uint8Array(len);
+          for (let k = 0; k < len; k++) u8[k] = binary.charCodeAt(k);
+          zip.file(`photo_${i + 1}.png`, u8, { binary: true });
+        } catch (err) {
+          console.warn('Failed to add photo to zip:', err);
+        }
+      });
+
+      const blob = await zip.generateAsync({ type: 'blob' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'photos.zip';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Download all failed, falling back to individual downloads:', err);
+      // Best-effort fallback: stagger individual downloads (may still be blocked on some mobile browsers)
+      photos.forEach((d, i) => {
+        setTimeout(() => {
+          const a = document.createElement('a');
+          a.href = d;
+          a.download = `photo_${i + 1}.png`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+        }, i * 220);
+      });
+    } finally {
+      setDownloading(false);
+    }
   };
 
   const deleteAll = () => {
@@ -319,14 +380,26 @@ export default function App() {
           <div className="flex flex-col items-center gap-2 mt-3">
             <button
               onClick={downloadAll}
-              disabled={photos.length === 0}
+              disabled={photos.length === 0 || downloading}
               className="w-40 flex items-center justify-center gap-2 px-3 py-2 bg-white/5 hover:bg-white/10 disabled:opacity-40 rounded-lg border border-white/6 text-sm text-white transition"
-              aria-disabled={photos.length === 0}
+              aria-disabled={photos.length === 0 || downloading}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
-              </svg>
-              <span className="text-sm">تحميل الكل</span>
+              {downloading ? (
+                <>
+                  <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.2" />
+                    <path d="M22 12a10 10 0 00-10-10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+                  </svg>
+                  <span className="text-sm">تحضير التنزيل...</span>
+                </>
+              ) : (
+                <>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
+                  </svg>
+                  <span className="text-sm">تحميل الكل</span>
+                </>
+              )}
             </button>
 
             <button
