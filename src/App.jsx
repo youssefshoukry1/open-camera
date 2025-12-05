@@ -231,7 +231,7 @@ export default function App() {
               muted
               className="w-full h-full object-cover"
               onClick={handleFocus}
-              style={{ filter: `brightness(${0.85 + brightness * 0.3})` }}
+              style={{ filter: `brightness(${0.85 + brightness * 0.3})`, transition: 'filter 160ms linear' }}
             />
             <img
               src="/frame.png"
@@ -255,7 +255,7 @@ export default function App() {
               {/* Custom vertical slider: the visible track is narrow but the hit area is bigger for touch */}
               <div
                 ref={sliderRef}
-                className="w-8 h-36 bg-transparent flex items-center justify-center"
+                className="w-10 h-44 bg-transparent flex items-center justify-center slider-container"
                 onPointerDown={handlePointerDown}
                 onPointerMove={handlePointerMove}
                 onPointerUp={handlePointerUp}
@@ -264,10 +264,10 @@ export default function App() {
                 onTouchMove={(e) => { e.preventDefault(); updateFromPointer(e.touches[0].clientY, sliderRef.current); }}
                 onTouchEnd={(e) => { /* noop - pointer handlers handle release */ }}
               >
-                <div className="relative w-2 h-full rounded-full bg-gradient-to-t from-red-500 to-yellow-400">
+                <div className="relative w-3 h-full rounded-full slider-track">
                   <div
-                    className="absolute left-1/2 -translate-x-1/2 bg-white rounded-full shadow-lg"
-                    style={{ width: 18, height: 18, bottom: `${brightness * 100}%`, transform: 'translateY(50%)' }}
+                    className="absolute slider-thumb"
+                    style={{ left: '50%', top: `${(1 - brightness) * 100}%`, transform: 'translate(-50%, -50%)', width: 18, height: 18 }}
                   />
                 </div>
               </div>
@@ -339,11 +339,11 @@ export default function App() {
 
         {/* brightness control replaced: small inline slider styles */}
         <style>{`
-    .vslider { -webkit-appearance: none; appearance: none; width: 6px; height: 140px; background: linear-gradient(to top,#ef4444,#f59e0b); border-radius:999px; }
-    .vslider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 22px; height: 22px; background:#fff; border-radius:50%; box-shadow:0 6px 12px rgba(0,0,0,0.45); margin-top: -8px; }
-    .vslider::-moz-range-thumb { width:22px; height:22px; background:#fff; border-radius:50%; box-shadow:0 6px 12px rgba(0,0,0,0.45); }
-    .vslider:focus{ outline:none; }
-    @media (max-width:640px) { .vslider { height: 160px; } }
+    .slider-container { touch-action: none; -webkit-user-select:none; user-select:none; }
+    .slider-track { background: linear-gradient(to top, rgba(239,68,68,0.95), rgba(245,158,11,0.95)); box-shadow: inset 0 1px 0 rgba(255,255,255,0.06); border-radius:999px; }
+    .slider-thumb { position: absolute; left:50%; border-radius:50%; background: linear-gradient(180deg,#ffffff,#f3f4f6); box-shadow: 0 8px 20px rgba(0,0,0,0.45); transition: top 120ms cubic-bezier(.2,.9,.3,1), transform 80ms ease; }
+    .slider-thumb:active { transform: translate(-50%, -50%) scale(1.06); }
+    @media (max-width:640px) { .slider-container { width: 12px; } .slider-track { height: 160px; } }
   `}</style>
       </div>
 
