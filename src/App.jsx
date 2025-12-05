@@ -194,11 +194,18 @@ export default function App() {
   };
 
   const downloadAll = () => {
+    // Stagger downloads slightly and append anchors to DOM to improve reliability
     photos.forEach((d, i) => {
-      const a = document.createElement("a");
-      a.href = d;
-      a.download = `photo_${i + 1}.png`;
-      a.click();
+      setTimeout(() => {
+        const a = document.createElement("a");
+        a.href = d;
+        a.download = `photo_${i + 1}.png`;
+        // append so some browsers accept the click
+        document.body.appendChild(a);
+        a.click();
+        // cleanup
+        a.remove();
+      }, i * 180);
     });
   };
 
@@ -213,12 +220,10 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 text-white flex flex-col items-center p-6">
-      <h1 className="text-4xl md:text-5xl font-bold mb-3 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-        📸 كاميرا الكنيسة
+      <h1 className="text-4xl md:text-5xl font-bold mb-3 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent py-6">
+        ♟️ مسرحية اللعبة
       </h1>
-      <p className="text-sm text-slate-300 mb-8 max-w-xl text-center">
-        صور احترافية مع فريم و لوجو — التقط، عاين، نزّل أو امسح. الصور محفوظة محليًا بأمان.
-      </p>
+
 
       <div className="flex flex-col lg:flex-row gap-8 w-full max-w-6xl">
         {/* Camera + Buttons */}
