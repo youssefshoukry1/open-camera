@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 export default function App() {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
+  const cameraWrapRef = useRef(null);
 
   const [photos, setPhotos] = useState(() => {
     try {
@@ -148,10 +149,19 @@ export default function App() {
     }
 
     setIsTaking(true);
-
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
+    // Size canvas to the visible preview (CSS size) and scale for devicePixelRatio
+    const wrap = cameraWrapRef.current;
+    const rect = wrap ? wrap.getBoundingClientRect() : { width: video.videoWidth, height: video.videoHeight };
+    const dw = rect.width;
+    const dh = rect.height;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.round(dw * dpr);
+    canvas.height = Math.round(dh * dpr);
     const ctx = canvas.getContext("2d");
+    // work in CSS pixels by scaling the context
+    ctx.save();
+    ctx.scale(dpr, dpr);
+
     // load frame and logo first so we can composite consistently
     let frameImg = null;
     let frameLoaded = false;
@@ -177,37 +187,48 @@ export default function App() {
       logoLoaded = true;
     } catch { }
 
-    // draw video (mirrored for front camera) and frame
-    if (isMirrored) {
-      ctx.save();
-      ctx.translate(canvas.width, 0);
-      ctx.scale(-1, 1);
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      try {
-        if (frameLoaded && frameImg && frameImg.complete && frameImg.naturalWidth) {
-          ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
-        }
-      } catch (err) {
-        console.warn('Failed to draw frame image (mirrored):', err);
+    // draw the visible portion of the video (object-fit: cover behavior)
+    try {
+      const vW = video.videoWidth;
+      const vH = video.videoHeight;
+      const containerAspect = dw / dh;
+      const videoAspect = vW / vH;
+      let sx = 0, sy = 0, sWidth = vW, sHeight = vH;
+      if (videoAspect > containerAspect) {
+        // video is wider -> crop left/right
+        sWidth = Math.round(vH * containerAspect);
+        sx = Math.round((vW - sWidth) / 2);
+      } else if (videoAspect < containerAspect) {
+        // video is taller -> crop top/bottom
+        sHeight = Math.round(vW / containerAspect);
+        sy = Math.round((vH - sHeight) / 2);
       }
-      ctx.restore();
-    } else {
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      try {
+
+      if (isMirrored) {
+        ctx.save();
+        ctx.translate(dw, 0);
+        ctx.scale(-1, 1);
+        ctx.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, dw, dh);
         if (frameLoaded && frameImg && frameImg.complete && frameImg.naturalWidth) {
-          ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
+          ctx.drawImage(frameImg, 0, 0, dw, dh);
         }
-      } catch (err) {
-        console.warn('Failed to draw frame image:', err);
+        ctx.restore();
+      } else {
+        ctx.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, dw, dh);
+        if (frameLoaded && frameImg && frameImg.complete && frameImg.naturalWidth) {
+          ctx.drawImage(frameImg, 0, 0, dw, dh);
+        }
       }
+    } catch (err) {
+      console.warn('Failed to draw video/frame to canvas:', err);
     }
 
     // draw logo positioned to match preview (left for back camera, right for front)
     try {
       if (logoLoaded && logoImg && logoImg.complete && logoImg.naturalWidth) {
-        const logoWidth = canvas.width * 0.18;
-        const logoHeight = logoWidth * ((logoImg.height && logoImg.width) ? (logoImg.height / logoImg.width) : 1);
-        const logoX = 10; // always left
+        const logoWidth = Math.round(dw * 0.18); // CSS pixels
+        const logoHeight = Math.round(logoWidth * ((logoImg.height && logoImg.width) ? (logoImg.height / logoImg.width) : 1));
+        const logoX = 10; // CSS pixels, left
         ctx.drawImage(logoImg, logoX, 10, logoWidth, logoHeight);
       }
     } catch (err) {
@@ -219,8 +240,8 @@ export default function App() {
       const text = overlayText;
       if (text) {
         ctx.save();
-        const padding = Math.round(canvas.width * 0.03);
-        const fontSize = Math.max(12, Math.round(canvas.width * 0.038));
+        const padding = Math.round(dw * 0.03); // CSS pixels
+        const fontSize = Math.max(12, Math.round(dw * 0.038)); // CSS px
         ctx.font = `bold ${fontSize}px sans-serif`;
         ctx.textBaseline = 'top';
 
@@ -242,13 +263,14 @@ export default function App() {
           return lines;
         };
 
-        const maxTextWidth = canvas.width - padding * 2 - 20;
+        const maxTextWidth = dw - padding * 2 - 20; // CSS pixels
         const lines = wrapText(ctx, text, maxTextWidth);
         const lineHeight = Math.round(fontSize * 1.25);
         const boxHeight = lines.length * lineHeight + padding * 2;
-        const boxWidth = Math.min(maxTextWidth, Math.max(...lines.map(l => ctx.measureText(l).width))) + padding * 2;
-        const boxX = canvas.width - boxWidth - 10; // always right
-        const boxY = canvas.height - boxHeight - 10;
+        const measuredWidths = lines.map(l => ctx.measureText(l).width);
+        const boxWidth = Math.min(maxTextWidth, Math.max(...measuredWidths)) + padding * 2;
+        const boxX = dw - boxWidth - 10; // CSS pixels, always right
+        const boxY = dh - boxHeight - 10; // CSS pixels
 
         // rounded rectangle background
         const roundRect = (x, y, w, h, r) => {
@@ -266,7 +288,7 @@ export default function App() {
         roundRect(boxX, boxY, boxWidth, boxHeight, 14);
         ctx.fill();
 
-        ctx.lineWidth = Math.max(1, Math.round(canvas.width * 0.002));
+        ctx.lineWidth = Math.max(1, Math.round(dw * 0.002));
         ctx.strokeStyle = 'rgba(255,255,255,0.06)';
         ctx.stroke();
 
@@ -278,13 +300,13 @@ export default function App() {
           ctx.fillText(ln, textX, y);
           y += lineHeight;
         }
-
         ctx.restore();
       }
     } catch (err) {
       console.warn('Failed to draw overlay text on canvas:', err);
     }
-
+    // restore any remaining transforms and export
+    ctx.restore();
     const data = canvas.toDataURL("image/png");
     setPhotos((p) => [data, ...p]);
 
@@ -364,7 +386,7 @@ export default function App() {
               />
             </div>
             {/* Text overlay (live preview) */}
-            <div className="absolute right-6 bottom-4 z-40 pointer-events-none" style={{ right: 4, left: 'auto' }}>
+            <div className="absolute right-6 bottom-4 z-40 pointer-events-none" style={{ right: -6, left: 'auto' }}>
               <div className="mx-auto max-w-full text-overlay" style={{ margin: 0 }}>
                 <p className="text-sm md:text-base leading-5 text-right" dir="rtl" style={{ margin: 0 }}>{overlayText}</p>
               </div>
