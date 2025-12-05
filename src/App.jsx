@@ -364,7 +364,7 @@ export default function App() {
               />
             </div>
             {/* Text overlay (live preview) */}
-            <div className="absolute right-4 bottom-4 z-40 pointer-events-none" style={{ right: 16, left: 'auto' }}>
+            <div className="absolute right-6 bottom-4 z-40 pointer-events-none" style={{ right: 4, left: 'auto' }}>
               <div className="mx-auto max-w-full text-overlay" style={{ margin: 0 }}>
                 <p className="text-sm md:text-base leading-5 text-right" dir="rtl" style={{ margin: 0 }}>{overlayText}</p>
               </div>
