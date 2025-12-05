@@ -184,7 +184,7 @@ export default function App() {
   const downloadOne = (dataUrl, index) => {
     const a = document.createElement("a");
     a.href = dataUrl;
-    a.download = `photo_${index + 1}.png`;
+    a.download = `مسرحية-${index + 1}.png`;
     a.click();
   };
 
@@ -199,7 +199,7 @@ export default function App() {
       setTimeout(() => {
         const a = document.createElement("a");
         a.href = d;
-        a.download = `photo_${i + 1}.png`;
+        a.download = `مسرحية-${i + 1}.png`;
         // append so some browsers accept the click
         document.body.appendChild(a);
         a.click();
