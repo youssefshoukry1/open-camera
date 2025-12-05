@@ -193,28 +193,38 @@ const handleFocus = async (e) => {
 <div className="flex flex-col lg:flex-row gap-8 w-full max-w-6xl">
   {/* Camera + Buttons */}
   <div className="flex-shrink-0 w-full lg:w-80 flex flex-col items-center">
-    <div className="relative w-72 h-128 rounded-3xl overflow-hidden shadow-2xl">
-      <video
-        ref={videoRef}
-        autoPlay
-        playsInline
-        muted
-        className="w-full h-full object-cover"
-        onClick={handleFocus}
-      />
-      <img
-        src="/frame.png"
-        alt="frame overlay"
-        className="pointer-events-none absolute inset-0 w-full h-full object-cover"
-        onError={(e) => (e.currentTarget.style.display = "none")}
-      />
-      <img
-        src="/logo.jpg"
-        alt="logo"
-        className="absolute left-4 top-4 w-20 h-20 object-contain rounded-lg"
-        onError={(e) => (e.currentTarget.style.display = "none")}
-      />
-    </div>
+<div className="relative w-72 h-128 rounded-3xl overflow-hidden shadow-2xl">
+  <video
+    ref={videoRef}
+    autoPlay
+    playsInline
+    muted
+    className="w-full h-full object-cover"
+    onClick={handleFocus}
+  />
+  <img
+    src="/frame.png"
+    alt="frame overlay"
+    className="pointer-events-none absolute inset-0 w-full h-full object-cover"
+  />
+  <img
+    src="/logo.jpg"
+    alt="logo"
+    className="absolute left-4 top-4 w-20 h-20 object-contain rounded-lg"
+  />
+
+  {/* Brightness slider داخل الكاميرا */}
+  <input
+    type="range"
+    min={0}
+    max={1}
+    step={0.01}
+    value={brightness}
+    onChange={handleBrightnessChange}
+    className="absolute top-2 bottom-2 right-2 w-2 h-full rotate-[-90deg] origin-center accent-yellow-400"
+  />
+</div>
+
 
     {/* Buttons */}
     <div className="flex justify-center mt-4 gap-4">
