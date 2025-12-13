@@ -106,24 +106,24 @@ const CameraView = ({
 }) => {
   const sliderRef = useRef(null);
 
-  const updateFromPointer = (clientY, pointerTarget) => {
-    const el = sliderRef.current || pointerTarget;
+  const updateFromPointer = (clientX, pointerTarget) => {
+    const el = pointerTarget || sliderRef.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
-    const y = clientY - rect.top;
-    const pct = 1 - y / rect.height;
+    const x = clientX - rect.left;
+    const pct = Math.max(0, Math.min(1, x / rect.width));
     setBrightnessValue(pct);
   };
 
   const handlePointerDown = (e) => {
     e.preventDefault();
     e.currentTarget.setPointerCapture?.(e.pointerId);
-    updateFromPointer(e.clientY, e.currentTarget);
+    updateFromPointer(e.clientX, e.currentTarget);
   };
 
   const handlePointerMove = (e) => {
     if (e.pressure === 0 && e.buttons === 0) return;
-    updateFromPointer(e.clientY, e.currentTarget);
+    updateFromPointer(e.clientX, e.currentTarget);
   };
 
   const handlePointerUp = (e) => {
@@ -146,26 +146,28 @@ const CameraView = ({
         <div className="absolute left-4 top-4" style={{ left: 16, right: 'auto' }}>
           {assets.logo && <img src={assets.logo} alt="logo" className="w-14 h-14 object-contain rounded-lg" style={{ display: 'block' }} />}
         </div>
-        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex flex-col items-center gap-2 z-40">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-5 h-5 text-white"><circle cx="12" cy="12" r="3.5" strokeWidth="1.5" /><path strokeWidth="1.2" d="M12 2v1.5M12 20.5V22M4.2 4.2l1.06 1.06M18.74 18.74l1.06 1.06M2 12h1.5M20.5 12H22M4.2 19.8l1.06-1.06M18.74 5.26l1.06-1.06" /></svg>
-          <div ref={sliderRef} className="w-10 h-40 bg-transparent flex items-center justify-center slider-container" onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerCancel={handlePointerUp} onTouchStart={(e) => { e.preventDefault(); updateFromPointer(e.touches[0].clientY, sliderRef.current); }} onTouchMove={(e) => { e.preventDefault(); updateFromPointer(e.touches[0].clientY, sliderRef.current); }} onTouchEnd={() => { }} >
-            <div className="relative w-1.5 h-full rounded-full slider-track">
-              <div className="absolute slider-thumb" role="slider" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(brightness * 100)} style={{ left: '50%', top: `${(1 - brightness) * 100}%`, transform: 'translate(-50%, -50%)', width: 14, height: 14 }} />
-            </div>
-          </div>
-        </div>
       </div>
       <div className="relative w-full mt-4">
         <button onClick={onFlip} className="absolute top-4 right-4 p-2 bg-white/20 hover:bg-white/30 rounded-xl shadow-md transition flex items-center justify-center">
-          <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M4 4v6h6M20 20v-6h-6M4 20h16M4 4h16" /></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M4 4v6h6m-6 0h16v10H4V10zm16 0v-6h-6" /></svg>
         </button>
         <div className="flex justify-center">
-          <button onClick={onCapture} disabled={isTaking} className={`relative flex items-center justify-center w-18 h-18 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 shadow-2xl transform transition-all active:scale-95 ${isTaking ? "animate-pulse" : "hover:scale-105"}`} aria-label="Capture photo">
+          <button onClick={onCapture} disabled={isTaking} className={`relative flex items-center justify-center w-18 h-18 rounded-full bg-gradient-to-br from-red-500 to-green-600 shadow-2xl transform transition-all active:scale-95 ${isTaking ? "animate-pulse" : "hover:scale-105"}`} aria-label="Capture photo">
             <div className="bg-white w-10 h-10 rounded-full flex items-center justify-center shadow-inner" style={{ width: 64, height: 64 }}>
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3" strokeWidth="1.6" /><path strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14" /></svg>
             </div>
           </button>
         </div>
+      </div>
+      {/* --- New Horizontal Brightness Slider --- */}
+      <div className="w-full max-w-xs flex items-center gap-3 mt-4 px-2">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-5 h-5 text-white/60 flex-shrink-0"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.021 0l-.707-.707M6.343 6.343l-.707-.707" /></svg>
+        <div ref={sliderRef} className="w-full h-8 bg-transparent flex items-center justify-center slider-container" onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerCancel={handlePointerUp} onTouchStart={(e) => { e.preventDefault(); updateFromPointer(e.touches[0].clientX, sliderRef.current); }} onTouchMove={(e) => { e.preventDefault(); updateFromPointer(e.touches[0].clientX, sliderRef.current); }} onTouchEnd={() => { }} >
+          <div className="relative h-1.5 w-full rounded-full slider-track">
+            <div className="absolute slider-thumb" role="slider" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(brightness * 100)} style={{ top: '50%', left: `${brightness * 100}%`, transform: 'translate(-50%, -50%)', width: 16, height: 16 }} />
+          </div>
+        </div>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 text-white/90 flex-shrink-0"><path d="M12 18a6 6 0 100-12 6 6 0 000 12z" /></svg>
       </div>
     </div>
   );
@@ -176,7 +178,7 @@ const Gallery = ({ photos, onSelectPhoto, downloadOne, deleteOne }) => {
   if (!photos || photos.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-96 rounded-2xl bg-slate-800/30">
-        <p className="text-slate-400 text-center">لسه مفيش صور اتصورت<br /> ! يلا اتصور عشان ماتضربش </p>
+        <p className="text-slate-400 text-center">Your gallery is empty!<br />Take a festive photo to get started.</p>
       </div>
     );
   }
@@ -224,14 +226,12 @@ const PhotoModal = ({ modalPhoto, onClose, onDownload, onDelete }) => {
 // --- Global Styles ---
 const GlobalStyles = () => (
   <style>{`
-    .slider-container { touch-action: none; -webkit-user-select:none; user-select:none; }
-    .slider-track { background: linear-gradient(to top, #06b6d4 0%, #6366f1 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.04); border-radius:999px; width:6px; margin:0 auto; }
-    .slider-thumb { position: absolute; left:50%; border-radius:50%; background: linear-gradient(180deg,#ffffff,#eef2ff); box-shadow: 0 6px 14px rgba(0,0,0,0.35); transition: top 130ms cubic-bezier(.2,.9,.3,1), transform 110ms ease; border: 2px solid rgba(99,102,241,0.12); }
-    .slider-thumb:active { transform: translate(-50%, -50%) scale(1.08); box-shadow: 0 10px 22px rgba(99,102,241,0.18); }
+    .slider-container { touch-action: none; -webkit-user-select:none; user-select:none; cursor: grab; }
+    .slider-track { background: linear-gradient(to right, #ef4444 0%, #16a34a 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.04); border-radius:999px; height:6px; margin:0 auto; }
+    .slider-thumb { position: absolute; top:50%; border-radius:50%; background: linear-gradient(180deg,#ffffff,#eef2ff); box-shadow: 0 6px 14px rgba(0,0,0,0.35); transition: left 130ms cubic-bezier(.2,.9,.3,1), transform 110ms ease; border: 2px solid rgba(239,68,68,0.2); }
+    .slider-thumb:active { transform: translate(-50%, -50%) scale(1.08); box-shadow: 0 10px 22px rgba(239,68,68,0.18); cursor: grabbing; }
     .slider-container:active .slider-track { filter: brightness(1.02); }
-    @media (max-width:640px) { .slider-container { width: 12px; } .slider-track { height: 160px; } }
-    .text-overlay { max-width: 640px; margin: 0 auto; background: linear-gradient(180deg, rgba(6,6,23,0.42), rgba(6,6,23,0.6)); padding: 10px 14px; border-radius: 12px; box-shadow: 0 8px 30px rgba(2,6,23,0.6); border: 1px solid rgba(255,255,255,0.06); backdrop-filter: blur(6px); }
-    .text-overlay p { margin: 0; font-family: 'Segoe UI', Tahoma, Arial, 'Noto Naskh Arabic', sans-serif; font-weight: 600; }
+    /* Text overlay styles are no longer needed */
     .gallery-card { border-radius: 14px; padding: 8px; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); }
     .glass-frame { border-radius: 10px; overflow: hidden; border: 1px solid rgba(255,255,255,0.06); background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); box-shadow: 0 6px 18px rgba(2,6,23,0.45), inset 0 1px 0 rgba(255,255,255,0.02); backdrop-filter: blur(6px) saturate(120%); }
     .gallery-card img { display:block; }
@@ -444,9 +444,9 @@ export default function App() {
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 text-white flex flex-col items-center p-6">
-        <h1 className="text-4xl md:text-5xl font-bold mb-3 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent py-6">
-          ♟️ مسرحية اللعبة
+      <div className="min-h-screen bg-gradient-to-br from-gray-800 via-red-950 to-gray-900 text-white flex flex-col items-center p-6">
+        <h1 className="text-4xl md:text-5xl font-bold mb-3 bg-gradient-to-r from-green-400 to-red-500 bg-clip-text text-transparent py-6">
+          🎄 Christmas Booth
         </h1>
 
         <div className="flex flex-col lg:flex-row gap-8 w-full max-w-6xl">
@@ -463,7 +463,7 @@ export default function App() {
               isTaking={isTaking}
               assets={assets}
             />
-            <div className="flex flex-col items-center gap-2 mt-3">
+            <div className="flex flex-col items-center gap-2 mt-4">
               <button onClick={downloadAll} disabled={photos.length === 0} className="w-40 flex items-center justify-center gap-2 px-3 py-2 bg-white/5 hover:bg-white/10 disabled:opacity-40 rounded-lg border border-white/6 text-sm text-white transition">
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" /></svg>
                 <span className="text-sm">تحميل الكل</span>
