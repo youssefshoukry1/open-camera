@@ -225,6 +225,20 @@ const PhotoModal = ({ modalPhoto, onClose, onDownload, onDelete }) => {
   );
 };
 
+// --- Snowfall Component for background effect ---
+const Snowfall = () => {
+  const flakes = Array.from({ length: 50 }).map((_, i) => {
+    const style = {
+      left: `${Math.random() * 100}%`,
+      animationDuration: `${Math.random() * 8 + 7}s`, // 7 to 15 seconds
+      animationDelay: `${Math.random() * 10}s`,
+      opacity: Math.random() * 0.6 + 0.3,
+    };
+    return <div key={i} className="snowflake" style={style}>❆</div>;
+  });
+  return <div className="snowfall-container" aria-hidden="true">{flakes}</div>;
+};
+
 // --- Global Styles ---
 const GlobalStyles = () => (
   <style>{`
@@ -257,6 +271,28 @@ const GlobalStyles = () => (
       0% { opacity: 0; }
       50% { opacity: 0.9; }
       100% { opacity: 0; }
+    }
+    .snowfall-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .snowflake {
+      position: absolute;
+      top: -20px;
+      color: white;
+      font-size: 1.2rem;
+      animation-name: snowfall;
+      animation-timing-function: linear;
+      animation-iteration-count: infinite;
+    }
+    @keyframes snowfall {
+      from { transform: translateY(0px) translateX(0px) rotate(0deg); }
+      to { transform: translateY(105vh) translateX(15px) rotate(270deg); }
     }
 
 
@@ -467,11 +503,11 @@ export default function App() {
   return (
     <>
       <div className="min-h-screen bg-gradient-to-br from-gray-800 via-red-950 to-gray-900 text-white flex flex-col items-center p-6">
-        <h1 className="text-4xl md:text-5xl font-bold mb-3 bg-gradient-to-r from-green-400 to-red-500 bg-clip-text text-transparent py-6">
-          🎄 Christmas Booth
+        <h1 className="text-4xl md:text-5xl font-bold mb-3 bg-gradient-to-r from-green-400 to-red-500 bg-clip-text text-transparent py-6 relative z-10">
+          🎄 Christmas Booth 🌟
         </h1>
 
-        <div className="flex flex-col lg:flex-row gap-8 w-full max-w-6xl">
+        <div className="flex flex-col lg:flex-row gap-8 w-full max-w-6xl relative z-10">
           <div className="flex flex-col items-center">
             <CameraView
               videoRef={videoRef}
@@ -509,6 +545,7 @@ export default function App() {
           </section>
         </div>
 
+        <Snowfall />
         <GlobalStyles />
         <canvas ref={canvasRef} className="hidden" />
         <PhotoModal modalPhoto={modalPhoto} onClose={() => setModalPhoto(null)} onDownload={downloadOne} onDelete={() => { if (modalPhoto) deleteOne(modalPhoto.photo.id); setModalPhoto(null); }} />
