@@ -145,7 +145,7 @@ const CameraView = ({
         />
         {isFlashing && <div className="camera-flash-overlay" />}
         {assets.frame && <img src={assets.frame} alt="frame overlay" className="pointer-events-none absolute inset-0 w-full h-full object-cover" />}
-        <div className="absolute left-4 top-4" style={{ left: 16, right: 'auto' }}>
+        <div className="absolute left-4 top-4" style={{ left: 'auto', right: 'auto' }}>
           {assets.logo && <img src={assets.logo} alt="logo" className="w-14 h-14 object-contain rounded-lg" style={{ display: 'block' }} />}
         </div>
       </div>
@@ -335,7 +335,7 @@ export default function App() {
           return null;
         }
       };
-      setAssets({ frame: await imageToDataUrl('/frame.png'), logo: await imageToDataUrl('/logo.jpg') });
+      setAssets({ frame: await imageToDataUrl('/frame-garland.png'), logo: await imageToDataUrl('/logo.jpg') });
 
       try {
         const dbPhotos = await getAllPhotos();
