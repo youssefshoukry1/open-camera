@@ -11,6 +11,10 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.17",
+    "cloudinary": "^2.8.0",
+    "compressorjs": "^1.2.1",
+    "html-to-image": "^1.11.13",
+    "idb": "^8.0.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.10.0",
