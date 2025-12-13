@@ -102,7 +102,8 @@ const CameraView = ({
   onFlip,
   onCapture,
   isTaking,
-  assets
+  assets,
+  isFlashing
 }) => {
   const sliderRef = useRef(null);
 
@@ -142,6 +143,7 @@ const CameraView = ({
           onClick={handleFocus}
           style={{ filter: `brightness(${0.85 + brightness * 0.3})`, transition: 'filter 160ms linear', transform: isMirrored ? 'scaleX(-1)' : 'none' }}
         />
+        {isFlashing && <div className="camera-flash-overlay" />}
         {assets.frame && <img src={assets.frame} alt="frame overlay" className="pointer-events-none absolute inset-0 w-full h-full object-cover" />}
         <div className="absolute left-4 top-4" style={{ left: 16, right: 'auto' }}>
           {assets.logo && <img src={assets.logo} alt="logo" className="w-14 h-14 object-contain rounded-lg" style={{ display: 'block' }} />}
@@ -232,6 +234,16 @@ const GlobalStyles = () => (
     .slider-thumb:active { transform: translate(-50%, -50%) scale(1.08); box-shadow: 0 10px 22px rgba(239,68,68,0.18); cursor: grabbing; }
     .slider-container:active .slider-track { filter: brightness(1.02); }
     /* Text overlay styles are no longer needed */
+    .camera-flash-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(255, 255, 255, 0.9); /* White flash */
+      opacity: 0;
+      animation: cameraFlash 0.2s ease-out forwards; /* Flash animation */
+    }
     .gallery-card { border-radius: 14px; padding: 8px; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); }
     .glass-frame { border-radius: 10px; overflow: hidden; border: 1px solid rgba(255,255,255,0.06); background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); box-shadow: 0 6px 18px rgba(2,6,23,0.45), inset 0 1px 0 rgba(255,255,255,0.02); backdrop-filter: blur(6px) saturate(120%); }
     .gallery-card img { display:block; }
@@ -241,6 +253,13 @@ const GlobalStyles = () => (
     .footer-glass { background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border: 1px solid rgba(255,255,255,0.06); box-shadow: 0 10px 30px rgba(2,6,23,0.5); backdrop-filter: blur(8px) saturate(120%); }
     .footer-glass a { text-decoration: none; }
     @media (max-width: 640px) { .footer-glass { flex-direction: column; gap: 8px; text-align: center; } }
+    @keyframes cameraFlash {
+      0% { opacity: 0; }
+      50% { opacity: 0.9; }
+      100% { opacity: 0; }
+    }
+
+
   `}</style>
 );
 
@@ -253,6 +272,7 @@ export default function App() {
 
   const [isTaking, setIsTaking] = useState(false);
   const [isLoading, setIsLoading] = useState(true); // حالة جديدة لتتبع التحميل
+  const [isFlashing, setIsFlashing] = useState(false); // حالة جديدة لتأثير الفلاش
   const [modalPhoto, setModalPhoto] = useState(null);
   const [facingMode, setFacingMode] = useState("environment");
   const isMirrored = facingMode === 'user';
@@ -321,6 +341,7 @@ export default function App() {
       return;
     }
 
+    setIsFlashing(true); // Start the flash effect
     setIsTaking(true);
 
     // --- The Manual, Robust, and 100% Accurate Method ---
@@ -391,6 +412,7 @@ export default function App() {
       alert("حدث خطأ أثناء التقاط الصورة.");
     }
 
+    setTimeout(() => setIsFlashing(false), 200); // End the flash effect after 200ms
     setTimeout(() => setIsTaking(false), 220);
   };
 
@@ -461,6 +483,7 @@ export default function App() {
               onFlip={() => setFacingMode(p => (p === "user" ? "environment" : "user"))}
               onCapture={takePhoto}
               isTaking={isTaking}
+              isFlashing={isFlashing} // Pass the flash state
               assets={assets}
             />
             <div className="flex flex-col items-center gap-2 mt-4">
