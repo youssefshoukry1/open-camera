@@ -227,7 +227,7 @@ const PhotoModal = ({ modalPhoto, onClose, onDownload, onDelete }) => {
 
 // --- Snowfall Component for background effect ---
 const Snowfall = () => {
-  const flakes = Array.from({ length: 50 }).map((_, i) => {
+  const flakes = Array.from({ length: 30 }).map((_, i) => {
     const style = {
       left: `${Math.random() * 100}%`,
       animationDuration: `${Math.random() * 8 + 7}s`, // 7 to 15 seconds
