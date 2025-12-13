@@ -335,7 +335,7 @@ export default function App() {
           return null;
         }
       };
-      setAssets({ frame: await imageToDataUrl('/frame-garland.png'), logo: await imageToDataUrl('/logo.jpg') });
+      setAssets({ frame: await imageToDataUrl('/frame-garland.png'), logo: await imageToDataUrl('/') });
 
       try {
         const dbPhotos = await getAllPhotos();
