@@ -132,8 +132,8 @@ const CameraView = ({
   };
 
   return (
-    <div className="flex-shrink-0 w-full lg:w-80 flex flex-col items-center">
-      <div ref={cameraWrapRef} className="relative w-72 h-128 rounded-3xl overflow-hidden shadow-2xl">
+    <div className="flex-shrink-0 w-full lg:w-96 flex flex-col items-center">
+      <div ref={cameraWrapRef} className="relative w-80 h-[569px] rounded-3xl overflow-hidden shadow-2xl">
         <video
           ref={videoRef}
           autoPlay
