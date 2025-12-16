@@ -176,7 +176,7 @@ const CameraView = ({
 };
 
 // --- Gallery Component ---
-const Gallery = ({ photos, onSelectPhoto, downloadOne, deleteOne }) => {
+const Gallery = ({ photos, onSelectPhoto, downloadOne, deleteOne, shareOne, isShareSupported }) => {
   if (!photos || photos.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-96 rounded-2xl bg-slate-800/30">
@@ -193,7 +193,8 @@ const Gallery = ({ photos, onSelectPhoto, downloadOne, deleteOne }) => {
             <img src={photo.previewUrl || photo.originalUrl} alt={`photo-${idx}`} className="w-full aspect-[9/16] object-cover rounded-lg transition-transform duration-300 group-hover:scale-105" />
           </div>
           <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-2 gap-2">
-            <button onClick={(e) => { e.stopPropagation(); downloadOne(photo); }} className="px-2 py-1 bg-emerald-500 rounded text-white text-sm font-semibold hover:bg-emerald-600">⬇️ تحميل</button>
+            {isShareSupported && <button onClick={(e) => { e.stopPropagation(); shareOne(photo); }} className="px-2 py-1 bg-sky-500 rounded text-white text-sm font-semibold hover:bg-sky-600">🔗 مشاركة</button>}
+            <button onClick={(e) => { e.stopPropagation(); downloadOne(photo); }} className="px-2 py-1 bg-emerald-500 rounded text-white text-sm font-semibold hover:bg-emerald-600">📥 تحميل</button>
             <button onClick={(e) => { e.stopPropagation(); deleteOne(photo.id); }} className="px-2 py-1 bg-red-600 rounded text-white text-sm font-semibold hover:bg-red-700">🗑 حذف</button>
           </div>
         </div>
@@ -203,7 +204,7 @@ const Gallery = ({ photos, onSelectPhoto, downloadOne, deleteOne }) => {
 };
 
 // --- Photo Modal ---
-const PhotoModal = ({ modalPhoto, onClose, onDownload, onDelete }) => {
+const PhotoModal = ({ modalPhoto, onClose, onDownload, onDelete, onShare, isShareSupported }) => {
   if (!modalPhoto) return null;
 
   return (
@@ -217,7 +218,8 @@ const PhotoModal = ({ modalPhoto, onClose, onDownload, onDelete }) => {
           <img src={modalPhoto.photo.originalUrl} alt="preview" className="max-h-[80vh] w-auto rounded-lg" />
         </div>
         <div className="p-4 flex gap-3">
-          <button onClick={() => onDownload(modalPhoto.photo)} className="flex-1 px-4 py-2 bg-green-500 rounded-lg text-white font-semibold hover:opacity-90">⬇️ تحميل</button>
+          {isShareSupported && <button onClick={() => onShare(modalPhoto.photo)} className="flex-1 px-4 py-2 bg-sky-500 rounded-lg text-white font-semibold hover:opacity-90">🔗 مشاركة</button>}
+          <button onClick={() => onDownload(modalPhoto.photo)} className="flex-1 px-4 py-2 bg-green-500 rounded-lg text-white font-semibold hover:opacity-90">📥 تحميل</button>
           <button onClick={() => onDelete(modalPhoto.photo.id)} className="flex-1 px-4 py-2 bg-red-500 rounded-lg text-white font-semibold hover:opacity-90">🗑 حذف</button>
         </div>
       </div>
@@ -312,11 +314,20 @@ export default function App() {
   const [modalPhoto, setModalPhoto] = useState(null);
   const [facingMode, setFacingMode] = useState("environment");
   const isMirrored = facingMode === 'user';
+  const [isShareSupported, setIsShareSupported] = useState(false);
   const [assets, setAssets] = useState({ frame: null, logo: null });
 
   const { brightness, setBrightnessValue, handleFocus } = useCamera(videoRef, facingMode);
 
   useEffect(() => {
+    // Check for Web Share API support
+    if (navigator.share && typeof navigator.canShare === "function") {
+      // We need to check if it can share files, as some implementations only support text/urls
+      // A dummy file check is a good way to be sure.
+      if (navigator.canShare({ files: [new File([""], "t.png", { type: "image/png" })] })) {
+        setIsShareSupported(true);
+      }
+    }
     // جلب الصور عند تحميل المكون لأول مرة
     async function loadPhotosFromDB() {
       // Pre-load assets and convert to data URLs
@@ -452,6 +463,34 @@ export default function App() {
     setTimeout(() => setIsTaking(false), 220);
   };
 
+  const sharePhoto = async (photo) => {
+    if (!isShareSupported) {
+      alert("المشاركة غير مدعومة في هذا المتصفح.");
+      return;
+    }
+
+    try {
+      const response = await fetch(photo.originalUrl);
+      const blob = await response.blob();
+      const file = new File([blob], `photo-${new Date(photo.createdAt).getTime()}.png`, {
+        type: "image/png",
+      });
+
+      await navigator.share({
+        title: "صورتي من Christmas Booth",
+        text: "لقد التقطت صورة رائعة!",
+        files: [file],
+      });
+    } catch (error) {
+      // This error is common when the user cancels the share dialog, so we don't need to show an alert.
+      if (error.name !== 'AbortError') {
+        console.error("Share error:", error);
+        alert(`فشلت المشاركة: ${error.message}`);
+      }
+    }
+  };
+
+
   const downloadOne = (photo) => {
     const a = document.createElement("a");
     a.href = photo.originalUrl;
@@ -540,7 +579,14 @@ export default function App() {
                 <p className="text-slate-400">جاري تحميل الصور...</p>
               </div>
             ) : (
-              <Gallery photos={photos} onSelectPhoto={(photo, index) => setModalPhoto({ photo, index })} downloadOne={downloadOne} deleteOne={deleteOne} />
+              <Gallery
+                photos={photos}
+                onSelectPhoto={(photo, index) => setModalPhoto({ photo, index })}
+                downloadOne={downloadOne}
+                deleteOne={deleteOne}
+                shareOne={sharePhoto}
+                isShareSupported={isShareSupported}
+              />
             )}
           </section>
         </div>
@@ -548,7 +594,8 @@ export default function App() {
         <Snowfall />
         <GlobalStyles />
         <canvas ref={canvasRef} className="hidden" />
-        <PhotoModal modalPhoto={modalPhoto} onClose={() => setModalPhoto(null)} onDownload={downloadOne} onDelete={() => { if (modalPhoto) deleteOne(modalPhoto.photo.id); setModalPhoto(null); }} />
+        <PhotoModal modalPhoto={modalPhoto} onClose={() => setModalPhoto(null)} onDownload={downloadOne} onDelete={() => { if (modalPhoto) deleteOne(modalPhoto.photo.id); setModalPhoto(null); }} onShare={sharePhoto} isShareSupported={isShareSupported}
+        />
 
         <footer className="w-full mt-8 flex justify-center">
           <div className="w-full max-w-6xl footer-glass p-4 rounded-xl flex items-center justify-between gap-4">
