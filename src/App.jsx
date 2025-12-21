@@ -438,7 +438,9 @@ export default function App() {
       if (logoImg) {
         const logoWidth = Math.round(rect.width * 0.18);
         const logoHeight = Math.round(logoWidth * (logoImg.height / logoImg.width));
-        ctx.drawImage(logoImg, 16, 16, logoWidth, logoHeight);
+        const logoX = rect.width - logoWidth - 6; // Match right: 6px
+        const logoY = 36; // Match top-9 (36px)
+        ctx.drawImage(logoImg, logoX, logoY, logoWidth, logoHeight);
       }
 
       const dataUrl = canvas.toDataURL("image/png", 0.95);
