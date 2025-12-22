@@ -145,9 +145,9 @@ const CameraView = ({
         />
         {isFlashing && <div className="camera-flash-overlay" />}
         {assets.frame && <img src={assets.frame} alt="frame overlay" className="pointer-events-none absolute inset-0 w-full h-full object-cover" />}
-        <div className="absolute left-4 top-9" style={{ left: 'auto', right: '6px' }}>
+        {/* <div className="absolute left-4 top-9" style={{ left: 'auto', right: '6px' }}>
           {assets.logo && <img src={assets.logo} alt="logo" className="w-16 h-16 object-contain rounded-lg" style={{ display: 'block' }} />}
-        </div>
+        </div> */}
       </div>
       <div className="relative w-full mt-4">
         <button onClick={onFlip} className="absolute top-4 right-4 p-2 bg-white/20 hover:bg-white/30 rounded-xl shadow-md transition flex items-center justify-center">
@@ -346,7 +346,7 @@ export default function App() {
           return null;
         }
       };
-      setAssets({ frame: await imageToDataUrl('/pppp.png'), logo: await imageToDataUrl('/christmas logo.png') });
+      setAssets({ frame: await imageToDataUrl('/christmassrrrr (3).png'), logo: await imageToDataUrl() });
 
       try {
         const dbPhotos = await getAllPhotos();
@@ -434,14 +434,14 @@ export default function App() {
       }
 
       // 3. Draw Logo
-      const logoImg = await loadImage(assets.logo);
-      if (logoImg) {
-        const logoWidth = Math.round(rect.width * 0.18);
-        const logoHeight = Math.round(logoWidth * (logoImg.height / logoImg.width));
-        const logoX = rect.width - logoWidth - 6; // Match right: 6px
-        const logoY = 36; // Match top-9 (36px)
-        ctx.drawImage(logoImg, logoX, logoY, logoWidth, logoHeight);
-      }
+      // const logoImg = await loadImage(assets.logo);
+      // if (logoImg) {
+      //   const logoWidth = Math.round(rect.width * 0.18);
+      //   const logoHeight = Math.round(logoWidth * (logoImg.height / logoImg.width));
+      //   const logoX = rect.width - logoWidth - 6; // Match right: 6px
+      //   const logoY = 36; // Match top-9 (36px)
+      //   ctx.drawImage(logoImg, logoX, logoY, logoWidth, logoHeight);
+      // }
 
       const dataUrl = canvas.toDataURL("image/png", 0.95);
 
