@@ -346,7 +346,7 @@ export default function App() {
           return null;
         }
       };
-      setAssets({ frame: await imageToDataUrl('/test.png'), logo: await imageToDataUrl('/christmas logo.png') });
+      setAssets({ frame: await imageToDataUrl('/christmass_final-2.png'), logo: await imageToDataUrl('/christmas logo.png') });
 
       try {
         const dbPhotos = await getAllPhotos();
