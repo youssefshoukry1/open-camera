@@ -149,24 +149,20 @@ const CameraView = ({
           {assets.logo && <img src={assets.logo} alt="logo" className="w-16 h-16 object-contain rounded-lg" style={{ display: 'block' }} />}
         </div> */}
       </div>
-      <div className="relative w-full mt-4">
-        <button onClick={onFlip} className="absolute top-4 right-4 p-2 bg-white/20 hover:bg-white/30 rounded-xl shadow-md transition flex items-center justify-center">
-          <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M4 4v6h6m-6 0h16v10H4V10zm16 0v-6h-6" /></svg>
+      <div className="relative w-full mt-6 flex items-center justify-center">
+        <button onClick={onFlip} className="absolute right-6 top-1/2 -translate-y-1/2 p-3 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/10 rounded-full shadow-lg transition active:scale-95 flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M4 4v6h6m-6 0h16v10H4V10zm16 0v-6h-6" /></svg>
         </button>
-        <div className="flex justify-center">
-          <button onClick={onCapture} disabled={isTaking} className={`relative flex items-center justify-center w-18 h-18 rounded-full bg-gradient-to-br from-red-500 to-green-600 shadow-2xl transform transition-all active:scale-95 ${isTaking ? "animate-pulse" : "hover:scale-105"}`} aria-label="Capture photo">
-            <div className="bg-white w-10 h-10 rounded-full flex items-center justify-center shadow-inner" style={{ width: 64, height: 64 }}>
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14" /></svg>
-            </div>
-          </button>
-        </div>
+        <button onClick={onCapture} disabled={isTaking} className={`group relative flex items-center justify-center w-20 h-20 rounded-full border-[3px] border-white/30 bg-white/10 backdrop-blur-md shadow-[0_0_20px_rgba(255,255,255,0.15)] transition-all ${isTaking ? "scale-95 opacity-90" : "hover:bg-white/20 hover:scale-105 hover:border-white/50"}`} aria-label="Capture photo">
+          <div className={`w-16 h-16 bg-white rounded-full shadow-inner transition-all duration-200 ${isTaking ? "scale-90" : "group-hover:scale-[0.95]"}`} />
+        </button>
       </div>
       {/* --- New Horizontal Brightness Slider --- */}
-      <div className="w-full max-w-xs flex items-center gap-3 mt-4 px-2">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-5 h-5 text-white/60 flex-shrink-0"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.021 0l-.707-.707M6.343 6.343l-.707-.707" /></svg>
-        <div ref={sliderRef} className="w-full h-8 bg-transparent flex items-center justify-center slider-container" onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerCancel={handlePointerUp} onTouchStart={(e) => { e.preventDefault(); updateFromPointer(e.touches[0].clientX, sliderRef.current); }} onTouchMove={(e) => { e.preventDefault(); updateFromPointer(e.touches[0].clientX, sliderRef.current); }} onTouchEnd={() => { }} >
+      <div className="w-full max-w-xs mt-6 px-4 py-3 bg-black/20 backdrop-blur-md rounded-2xl border border-white/10 flex items-center gap-3 shadow-lg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-5 h-5 text-white/70 flex-shrink-0"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.021 0l-.707-.707M6.343 6.343l-.707-.707" /></svg>
+        <div ref={sliderRef} className="relative w-full h-6 flex items-center justify-center slider-container touch-none" onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerCancel={handlePointerUp} onTouchStart={(e) => { e.preventDefault(); updateFromPointer(e.touches[0].clientX, sliderRef.current); }} onTouchMove={(e) => { e.preventDefault(); updateFromPointer(e.touches[0].clientX, sliderRef.current); }} onTouchEnd={() => { }} >
           <div className="relative h-1.5 w-full rounded-full slider-track">
-            <div className="absolute slider-thumb" role="slider" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(brightness * 100)} style={{ top: '50%', left: `${brightness * 100}%`, transform: 'translate(-50%, -50%)', width: 16, height: 16 }} />
+            <div className="absolute slider-thumb" role="slider" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(brightness * 100)} style={{ top: '50%', left: `${brightness * 100}%`, transform: 'translate(-50%, -50%)' }} />
           </div>
         </div>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 text-white/90 flex-shrink-0"><path d="M12 18a6 6 0 100-12 6 6 0 000 12z" /></svg>
@@ -192,10 +188,18 @@ const Gallery = ({ photos, onSelectPhoto, downloadOne, deleteOne, shareOne, isSh
           <div className="glass-frame">
             <img src={photo.previewUrl || photo.originalUrl} alt={`photo-${idx}`} className="w-full aspect-[9/16] object-cover rounded-lg transition-transform duration-300 group-hover:scale-105" />
           </div>
-          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-2 gap-2">
-            {isShareSupported && <button onClick={(e) => { e.stopPropagation(); shareOne(photo); }} className="px-2 py-1 bg-sky-500 rounded text-white text-sm font-semibold hover:bg-sky-600">🔗 مشاركة</button>}
-            <button onClick={(e) => { e.stopPropagation(); downloadOne(photo); }} className="px-2 py-1 bg-emerald-500 rounded text-white text-sm font-semibold hover:bg-emerald-600">📥 تحميل</button>
-            <button onClick={(e) => { e.stopPropagation(); deleteOne(photo.id); }} className="px-2 py-1 bg-red-600 rounded text-white text-sm font-semibold hover:bg-red-700">🗑 حذف</button>
+          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-3 rounded-lg backdrop-blur-[2px]">
+            {isShareSupported && (
+              <button onClick={(e) => { e.stopPropagation(); shareOne(photo); }} className="p-3 bg-white/10 hover:bg-white/20 text-white rounded-full backdrop-blur-md transition-transform hover:scale-110 border border-white/10" title="مشاركة">
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
+              </button>
+            )}
+            <button onClick={(e) => { e.stopPropagation(); downloadOne(photo); }} className="p-3 bg-white/10 hover:bg-white/20 text-white rounded-full backdrop-blur-md transition-transform hover:scale-110 border border-white/10" title="تحميل">
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+            </button>
+            <button onClick={(e) => { e.stopPropagation(); deleteOne(photo.id); }} className="p-3 bg-red-500/20 hover:bg-red-500/40 text-red-200 rounded-full backdrop-blur-md transition-transform hover:scale-110 border border-red-500/20" title="حذف">
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+            </button>
           </div>
         </div>
       ))}
@@ -208,19 +212,36 @@ const PhotoModal = ({ modalPhoto, onClose, onDownload, onDelete, onShare, isShar
   if (!modalPhoto) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-slate-900 rounded-2xl overflow-hidden max-w-3xl w-full" onClick={(e) => e.stopPropagation()}>
-        <div className="p-4 flex justify-between items-center bg-slate-800">
-          <h3 className="text-white font-bold">معاينة الصورة</h3>
-          <button onClick={onClose} className="px-3 py-1 rounded bg-slate-700 hover:bg-slate-600 text-white">✕ إغلاق</button>
-        </div>
-        <div className="p-4 bg-black flex justify-center">
-          <img src={modalPhoto.photo.originalUrl} alt="preview" className="max-h-[80vh] w-auto rounded-lg" />
-        </div>
-        <div className="p-4 flex gap-3">
-          {isShareSupported && <button onClick={() => onShare(modalPhoto.photo)} className="flex-1 px-4 py-2 bg-sky-500 rounded-lg text-white font-semibold hover:opacity-90">🔗 مشاركة</button>}
-          <button onClick={() => onDownload(modalPhoto.photo)} className="flex-1 px-4 py-2 bg-green-500 rounded-lg text-white font-semibold hover:opacity-90">📥 تحميل</button>
-          <button onClick={() => onDelete(modalPhoto.photo.id)} className="flex-1 px-4 py-2 bg-red-500 rounded-lg text-white font-semibold hover:opacity-90">🗑 حذف</button>
+    <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
+      <div className="relative max-w-3xl w-full flex flex-col items-center" onClick={(e) => e.stopPropagation()}>
+        <img src={modalPhoto.photo.originalUrl} alt="preview" className="max-h-[75vh] w-auto rounded-2xl shadow-2xl mb-6" />
+        <div className="flex items-center gap-4">
+          {isShareSupported && (
+            <button onClick={() => onShare(modalPhoto.photo)} className="flex flex-col items-center gap-1 text-white/80 hover:text-white transition group">
+              <div className="p-4 bg-white/10 group-hover:bg-white/20 rounded-full backdrop-blur-md transition-all">
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
+              </div>
+              <span className="text-xs font-medium">مشاركة</span>
+            </button>
+          )}
+          <button onClick={() => onDownload(modalPhoto.photo)} className="flex flex-col items-center gap-1 text-white/80 hover:text-white transition group">
+            <div className="p-4 bg-white/10 group-hover:bg-white/20 rounded-full backdrop-blur-md transition-all">
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+            </div>
+            <span className="text-xs font-medium">تحميل</span>
+          </button>
+          <button onClick={() => onDelete(modalPhoto.photo.id)} className="flex flex-col items-center gap-1 text-red-400/80 hover:text-red-400 transition group">
+            <div className="p-4 bg-red-500/10 group-hover:bg-red-500/20 rounded-full backdrop-blur-md transition-all">
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+            </div>
+            <span className="text-xs font-medium">حذف</span>
+          </button>
+          <button onClick={onClose} className="flex flex-col items-center gap-1 text-white/60 hover:text-white transition group ml-4">
+            <div className="p-4 rounded-full hover:bg-white/10 transition-all">
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </div>
+            <span className="text-xs font-medium">إغلاق</span>
+          </button>
         </div>
       </div>
     </div>
@@ -245,9 +266,9 @@ const Snowfall = () => {
 const GlobalStyles = () => (
   <style>{`
     .slider-container { touch-action: none; -webkit-user-select:none; user-select:none; cursor: grab; }
-    .slider-track { background: linear-gradient(to right, #ef4444 0%, #16a34a 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.04); border-radius:999px; height:6px; margin:0 auto; }
-    .slider-thumb { position: absolute; top:50%; border-radius:50%; background: linear-gradient(180deg,#ffffff,#eef2ff); box-shadow: 0 6px 14px rgba(0,0,0,0.35); transition: left 130ms cubic-bezier(.2,.9,.3,1), transform 110ms ease; border: 2px solid rgba(239,68,68,0.2); }
-    .slider-thumb:active { transform: translate(-50%, -50%) scale(1.08); box-shadow: 0 10px 22px rgba(239,68,68,0.18); cursor: grabbing; }
+    .slider-track { background: rgba(255,255,255,0.2); box-shadow: inset 0 1px 2px rgba(0,0,0,0.1); border-radius:999px; height:4px; margin:0 auto; width: 100%; }
+    .slider-thumb { position: absolute; top:50%; border-radius:50%; background: #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.3); transition: left 100ms ease, transform 100ms ease; width: 20px; height: 20px; cursor: grab; }
+    .slider-thumb:active { transform: translate(-50%, -50%) scale(1.2); cursor: grabbing; }
     .slider-container:active .slider-track { filter: brightness(1.02); }
     /* Text overlay styles are no longer needed */
     .camera-flash-overlay {
@@ -346,7 +367,7 @@ export default function App() {
           return null;
         }
       };
-      setAssets({ frame: await imageToDataUrl('/vvvvv.png'), logo: await imageToDataUrl() });
+      setAssets({ frame: await imageToDataUrl('/christmas-frame.png'), logo: await imageToDataUrl() });
 
       try {
         const dbPhotos = await getAllPhotos();
@@ -541,6 +562,35 @@ export default function App() {
     }
   };
 
+  const shareAll = async () => {
+    if (!isShareSupported) {
+      alert("المشاركة غير مدعومة في هذا المتصفح.");
+      return;
+    }
+    if (photos.length === 0) return;
+
+    try {
+      const files = await Promise.all(photos.map(async (photo) => {
+        const response = await fetch(photo.originalUrl);
+        const blob = await response.blob();
+        return new File([blob], `photo-${new Date(photo.createdAt).getTime()}.png`, {
+          type: "image/png",
+        });
+      }));
+
+      await navigator.share({
+        files: files,
+        title: "صوري من Christmas Booth",
+        text: "شوف الصور اللي صورتها!",
+      });
+    } catch (error) {
+      if (error.name !== 'AbortError') {
+        console.error("Share all error:", error);
+        alert(`فشلت المشاركة: ${error.message}`);
+      }
+    }
+  };
+
   return (
     <>
       <div className="min-h-screen bg-gradient-to-br from-gray-800 via-red-950 to-gray-900 text-white flex flex-col items-center p-6">
@@ -563,15 +613,23 @@ export default function App() {
               isFlashing={isFlashing} // Pass the flash state
               assets={assets}
             />
-            <div className="flex flex-col items-center gap-2 mt-4">
-              <button onClick={downloadAll} disabled={photos.length === 0} className="w-40 flex items-center justify-center gap-2 px-3 py-2 bg-white/5 hover:bg-white/10 disabled:opacity-40 rounded-lg border border-white/6 text-sm text-white transition">
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" /></svg>
-                <span className="text-sm">تحميل الكل</span>
-              </button>
-              <button onClick={deleteAll} disabled={photos.length === 0} className="w-40 flex items-center justify-center gap-2 px-3 py-2 bg-red-600 hover:bg-red-700 disabled:opacity-40 rounded-lg text-sm text-white transition">
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" d="M6 7h12M10 11v6m4-6v6M9 7l1-3h4l1 3" /></svg>
-                <span className="text-sm">حذف الكل</span>
-              </button>
+            <div className="flex flex-col items-center gap-3 mt-6 w-full max-w-xs">
+              <div className="flex gap-3 w-full">
+                <button onClick={downloadAll} disabled={photos.length === 0} className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-white/5 hover:bg-white/10 disabled:opacity-40 rounded-2xl border border-white/10 text-white transition-all active:scale-95">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                  <span className="font-medium">تحميل الكل</span>
+                </button>
+                <button onClick={deleteAll} disabled={photos.length === 0} className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-red-500/10 hover:bg-red-500/20 disabled:opacity-40 rounded-2xl border border-red-500/20 text-red-200 transition-all active:scale-95">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                  <span className="font-medium">حذف الكل</span>
+                </button>
+              </div>
+              {isShareSupported && (
+                <button onClick={shareAll} disabled={photos.length === 0} className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-sky-500/10 hover:bg-sky-500/20 disabled:opacity-40 rounded-2xl border border-sky-500/20 text-sky-200 transition-all active:scale-95">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
+                  <span className="font-medium">مشاركة الكل</span>
+                </button>
+              )}
             </div>
           </div>
 
