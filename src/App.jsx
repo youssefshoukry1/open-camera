@@ -583,7 +583,15 @@ export default function App() {
     if (photos.length === 0) return;
 
     try {
-      const files = photos.map((photo) => {
+      // تحديد الحد الأقصى للمشاركة لتجنب رفض المتصفح/النظام
+      const MAX_FILES = 10;
+      let photosToShare = photos;
+      if (photos.length > MAX_FILES) {
+        alert(`عشان قيود الموبايل، هنشارك أحدث ${MAX_FILES} صور بس.`);
+        photosToShare = photos.slice(0, MAX_FILES);
+      }
+
+      const files = photosToShare.map((photo) => {
         return dataURLtoFile(photo.originalUrl, `photo-${new Date(photo.createdAt).getTime()}.png`);
       });
 
