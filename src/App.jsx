@@ -91,6 +91,19 @@ const loadImage = (src) => {
   });
 };
 
+// --- Helper to convert Data URL to File synchronously ---
+const dataURLtoFile = (dataurl, filename) => {
+  const arr = dataurl.split(',');
+  const mime = arr[0].match(/:(.*?);/)[1];
+  const bstr = atob(arr[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+  return new File([u8arr], filename, { type: mime });
+};
+
 // --- UI Components ---
 const CameraView = ({
   videoRef,
@@ -570,13 +583,9 @@ export default function App() {
     if (photos.length === 0) return;
 
     try {
-      const files = await Promise.all(photos.map(async (photo) => {
-        const response = await fetch(photo.originalUrl);
-        const blob = await response.blob();
-        return new File([blob], `photo-${new Date(photo.createdAt).getTime()}.png`, {
-          type: "image/png",
-        });
-      }));
+      const files = photos.map((photo) => {
+        return dataURLtoFile(photo.originalUrl, `photo-${new Date(photo.createdAt).getTime()}.png`);
+      });
 
       await navigator.share({
         files: files,
