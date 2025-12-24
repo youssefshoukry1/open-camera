@@ -610,7 +610,7 @@ export default function App() {
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-gray-800 via-red-950 to-gray-900 text-white flex flex-col items-center p-6">
+      <div className="min-h-screen bg-gradient-to-br from-gray-800 via-red-950 to-gray-900 text-white flex flex-col items-center px-6 ">
         <h1 className="text-5xl md:text-6xl font-black mb-4 py-6 relative z-10 flex items-center justify-center gap-3 drop-shadow-2xl" dir="rtl">
           <span className="text-4xl animate-bounce">🎄</span>
           <div className="">
