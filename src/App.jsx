@@ -615,9 +615,9 @@ export default function App() {
           <span className="text-4xl animate-bounce">🎄</span>
           <div className="">
             <span className="text-red-500 drop-shadow-md">ك</span>
-            <span className="text-green-500 drop-shadow-md">ل</span>
-            <span className="text-yellow-400 drop-shadow-md">ي</span>
-            <span className="text-red-500 drop-shadow-md">ش</span>
+            <span className="text-red-500 drop-shadow-md">ل</span>
+            <span className="text-red-500 drop-shadow-md">ي</span>
+            <span className="text-green-500 drop-shadow-md">ش</span>
             <span className="text-green-500 drop-shadow-md">ي</span>
             <span className="text-white drop-shadow-md">ه</span>
           </div>
