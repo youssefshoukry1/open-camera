@@ -619,7 +619,7 @@ export default function App() {
             <span className="text-red-500 drop-shadow-md">ي</span>
             <span className="text-green-500 drop-shadow-md">ش</span>
             <span className="text-green-500 drop-shadow-md">ي</span>
-            <span className="text-white drop-shadow-md">ه</span>
+            <span className="text-green-500 drop-shadow-md">ه</span>
           </div>
           <span className="text-4xl animate-pulse">🌟</span>
         </h1>
