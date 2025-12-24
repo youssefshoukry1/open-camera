@@ -380,7 +380,7 @@ export default function App() {
           return null;
         }
       };
-      setAssets({ frame: await imageToDataUrl('/christmas-frame.png'), logo: await imageToDataUrl() });
+      setAssets({ frame: await imageToDataUrl('/christmass-hat.png'), logo: await imageToDataUrl() });
 
       try {
         const dbPhotos = await getAllPhotos();
