@@ -835,18 +835,34 @@ export default function App() {
   return (
     <>
       <div id="main-container" className="min-h-screen bg-gradient-to-br from-gray-800 via-red-950 to-gray-900 text-white flex flex-col items-center p-6 ">
-        <h1 className="text-5xl md:text-6xl font-black mb-4 py-6 relative z-10 flex items-center justify-center gap-3 drop-shadow-2xl" dir="rtl">
-          <span className="text-4xl animate-bounce">🎄</span>
-          <div className="">
-            <span className="text-red-500 drop-shadow-md">ك</span>
-            <span className="text-red-500 drop-shadow-md">ل</span>
-            <span className="text-red-500 drop-shadow-md">ي</span>
-            <span className="text-green-500 drop-shadow-md">ش</span>
-            <span className="text-green-500 drop-shadow-md">ي</span>
-            <span className="text-green-500 drop-shadow-md">ه</span>
+        <div className="relative z-10 flex items-center justify-center gap-6 mb-8 py-6">
+          {/* Stylish Tree Icon */}
+          <div className="relative group animate-bounce" style={{ animationDuration: '3s' }}>
+            <div className="absolute inset-0 bg-green-500/30 blur-xl rounded-full opacity-60"></div>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-12 h-12 md:w-16 md:h-16 text-green-400 drop-shadow-[0_0_15px_rgba(74,222,128,0.6)]">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 3L4 19h16L12 3z" fill="rgba(34, 197, 94, 0.2)" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 3l4 8H8l4-8z" fill="rgba(34, 197, 94, 0.4)" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19v3" />
+            </svg>
           </div>
-          <span className="text-4xl animate-pulse">🌟</span>
-        </h1>
+
+          {/* Glassy Gradient Text */}
+          <div className="relative px-10 py-4 rounded-3xl bg-white/5 backdrop-blur-md border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)] overflow-hidden group hover:bg-white/10 transition-all duration-500">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent opacity-50"></div>
+            <h1 className="relative text-6xl md:text-8xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-red-600 to-green-500 drop-shadow-sm transition-all duration-300 group-hover:scale-105" dir="rtl">
+              كليشيه
+            </h1>
+          </div>
+
+          {/* Stylish Star Icon */}
+          <div className="relative group animate-pulse" style={{ animationDuration: '4s' }}>
+            <div className="absolute inset-0 bg-yellow-500/30 blur-xl rounded-full opacity-60"></div>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-12 h-12 md:w-16 md:h-16 text-yellow-400 drop-shadow-[0_0_15px_rgba(250,204,21,0.6)]">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="rgba(250, 204, 21, 0.2)" />
+              <circle cx="12" cy="12" r="1" fill="currentColor" className="animate-ping" />
+            </svg>
+          </div>
+        </div>
 
         <ResolutionSection />
 
