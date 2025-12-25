@@ -701,20 +701,21 @@ export default function App() {
         // رسم الفيديو الخام على الكانفاس
         ctx.drawImage(video, 0, 0);
 
-        // استخدام الكانفاس نفسه كبديل (أخف وأسرع من تحويله لصورة base64)
-        placeholder = canvas;
+        // Fix for iOS: تحويل الكانفاس لصورة img لأن سفاري بيواجه مشاكل مع الكانفاس داخل المكتبة
+        placeholder = document.createElement('img');
+        placeholder.src = canvas.toDataURL('image/png');
 
         // نسخ نفس التنسيقات (بما في ذلك الفلاتر والقلب)
         placeholder.className = video.className;
         placeholder.style.cssText = video.style.cssText;
 
-        // استبدال الفيديو بالكانفاس مؤقتاً
+        // استبدال الفيديو بالصورة مؤقتاً
         video.parentNode.insertBefore(placeholder, video);
         video.style.display = 'none';
-      }
 
-      // انتظار بسيط لتحديث الـ DOM
-      await new Promise(r => setTimeout(r, 100));
+        // انتظار تحميل الصورة للتأكد من ظهورها في الايفون
+        await new Promise(resolve => setTimeout(resolve, 200));
+      }
 
       // تفعيل وضع السكرين شوت (إيقاف الأنيميشن)
       if (mainContainer) mainContainer.classList.add('screenshot-mode');
@@ -734,12 +735,13 @@ export default function App() {
       const dataUrl = await toPng(mainContainer, {
         cacheBust: false, // تجنب مشاكل الروابط
         height: captureHeight,
+        pixelRatio: 1, // Fix for iOS: منع تكبير الصورة بشكل مبالغ فيه على شاشات الريتنا
         style: {
           // إجبار النسخة المصورة إنها تبدأ من فوق خالص (0,0) بغض النظر عن السكرول
           position: 'absolute',
           top: '0',
           left: '0',
-          width: '100%',
+          width: `${mainContainer.offsetWidth}px`, // Fix for iOS: تحديد العرض بالبكسل بدلاً من النسبة المئوية
           margin: '0',
           transform: 'none',
         },
