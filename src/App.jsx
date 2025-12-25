@@ -688,7 +688,8 @@ export default function App() {
     let placeholder = null;
 
     try {
-      const { toPng } = await import('html-to-image');
+      // استخدام toJpeg بدلاً من toPng لأنه أخف وأكثر استقراراً على الايفون
+      const { toJpeg } = await import('html-to-image');
 
       // 1. معالجة الفيديو: تحويل الفريم الحالي لصورة Canvas
       // ده ضروري لأن مكتبات السكرين شوت مش بتشوف الفيديو اللايف
@@ -701,20 +702,33 @@ export default function App() {
         // رسم الفيديو الخام على الكانفاس
         ctx.drawImage(video, 0, 0);
 
-        // استخدام الكانفاس نفسه كبديل (أخف وأسرع من تحويله لصورة base64)
-        placeholder = canvas;
+        // تحويل الكانفاس لصورة JPEG (أخف من PNG)
+        const frameData = canvas.toDataURL('image/jpeg', 0.9);
+        placeholder = document.createElement('img');
+        placeholder.src = frameData;
 
         // نسخ نفس التنسيقات (بما في ذلك الفلاتر والقلب)
         placeholder.className = video.className;
         placeholder.style.cssText = video.style.cssText;
+        // تأكيد الأبعاد عشان الصورة تملأ المكان صح
+        placeholder.style.width = '100%';
+        placeholder.style.height = '100%';
+        placeholder.style.objectFit = 'cover';
 
-        // استبدال الفيديو بالكانفاس مؤقتاً
+        // استبدال الفيديو بالصورة مؤقتاً
         video.parentNode.insertBefore(placeholder, video);
         video.style.display = 'none';
-      }
 
-      // انتظار بسيط لتحديث الـ DOM
-      await new Promise(r => setTimeout(r, 150));
+        // انتظار تحميل الصورة تماماً قبل التصوير (مهم جداً للايفون)
+        await new Promise((resolve) => {
+          if (placeholder.complete) resolve();
+          else {
+            placeholder.onload = resolve;
+            placeholder.onerror = resolve; // استمرار حتى لو حصل خطأ بسيط
+            setTimeout(resolve, 500); // مهلة أمان
+          }
+        });
+      }
 
       // تفعيل وضع السكرين شوت (إيقاف الأنيميشن)
       if (mainContainer) mainContainer.classList.add('screenshot-mode');
@@ -731,7 +745,8 @@ export default function App() {
         captureHeight = (camRect.bottom - mainRect.top) + 20;
       }
 
-      const dataUrl = await toPng(mainContainer, {
+      const dataUrl = await toJpeg(mainContainer, {
+        quality: 0.95,
         cacheBust: false, // تجنب مشاكل الروابط
         height: captureHeight,
         pixelRatio: 1, // Fix for iOS: منع تكبير الصورة بشكل مبالغ فيه على شاشات الريتنا
@@ -748,7 +763,7 @@ export default function App() {
       });
 
       const link = document.createElement('a');
-      link.download = 'my-resolution.png';
+      link.download = 'my-resolution.jpg';
       link.href = dataUrl;
       link.click();
 
