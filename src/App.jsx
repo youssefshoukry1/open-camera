@@ -157,7 +157,7 @@ const CameraView = ({
           style={{ filter: `brightness(${0.85 + brightness * 0.3})`, transition: 'filter 160ms linear', transform: isMirrored ? 'scaleX(-1)' : 'none' }}
         />
         {isFlashing && <div className="camera-flash-overlay" />}
-        {assets.frame && <img src={assets.frame} alt="frame overlay" className="pointer-events-none absolute inset-0 w-full h-full object-cover" />}
+        {assets.frame && <img id="frame-overlay" src={assets.frame} alt="frame overlay" className="pointer-events-none absolute inset-0 w-full h-full object-cover" />}
         {/* <div className="absolute left-4 top-9" style={{ left: 'auto', right: '6px' }}>
           {assets.logo && <img src={assets.logo} alt="logo" className="w-16 h-16 object-contain rounded-lg" style={{ display: 'block' }} />}
         </div> */}
@@ -702,6 +702,13 @@ export default function App() {
         // رسم الفيديو الخام على الكانفاس
         ctx.drawImage(video, 0, 0);
 
+        // دمج الفريم مع الفيديو في نفس الصورة (حل نهائي للايفون)
+        const frameImg = document.getElementById('frame-overlay');
+        if (frameImg) {
+          ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
+          frameImg.style.visibility = 'hidden'; // إخفاء الفريم الأصلي مؤقتاً
+        }
+
         // تحويل الكانفاس لصورة PNG
         const frameData = canvas.toDataURL('image/png');
         placeholder = document.createElement('img');
@@ -773,7 +780,6 @@ export default function App() {
       });
 
       setPhotos(p => [{ ...savedPhoto, previewUrl }, ...p]);
-      alert("تم حفظ السكرين شوت في المعرض تحت! 👇");
 
     } catch (error) {
       console.error("Screenshot error:", error);
@@ -790,6 +796,10 @@ export default function App() {
       }
       if (video) {
         video.style.display = originalDisplay;
+      }
+      const frameImg = document.getElementById('frame-overlay');
+      if (frameImg) {
+        frameImg.style.visibility = 'visible';
       }
       if (mainContainer) {
         mainContainer.classList.remove('screenshot-mode');
