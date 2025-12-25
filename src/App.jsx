@@ -277,9 +277,13 @@ const Snowfall = () => {
 
 // --- Resolution Section Component ---
 const ResolutionSection = ({ onScreenshot }) => {
-  const [text, setText] = useState("");
-  const [isEditing, setIsEditing] = useState(true);
+  const [text, setText] = useState(() => localStorage.getItem('resolutionText') || "");
+  const [isEditing, setIsEditing] = useState(() => !localStorage.getItem('resolutionText'));
   const [showControls, setShowControls] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem('resolutionText', text);
+  }, [text]);
 
   const handleSave = () => {
     if (text.trim()) {
@@ -689,31 +693,47 @@ export default function App() {
         // رسم الفيديو الخام على الكانفاس
         ctx.drawImage(video, 0, 0);
 
-        // إنشاء عنصر صورة بديل
-        placeholder = document.createElement('img');
-        placeholder.src = canvas.toDataURL('image/png');
+        // استخدام الكانفاس نفسه كبديل (أخف وأسرع من تحويله لصورة base64)
+        placeholder = canvas;
 
         // نسخ نفس التنسيقات (بما في ذلك الفلاتر والقلب)
         placeholder.className = video.className;
         placeholder.style.cssText = video.style.cssText;
 
-        // استبدال الفيديو بالصورة مؤقتاً
+        // استبدال الفيديو بالكانفاس مؤقتاً
         video.parentNode.insertBefore(placeholder, video);
         video.style.display = 'none';
       }
 
+      // انتظار بسيط لتحديث الـ DOM
+      await new Promise(r => setTimeout(r, 100));
+
       // 2. التقاط الصورة
-      // بنحدد العرض والارتفاع بناءً على الشاشة الحالية (Viewport)
-      // وبنعمل إزاحة للمحتوى عشان نعوض السكرول (translateY)
-      const dataUrl = await toPng(document.getElementById('main-container') || document.body, {
-        width: window.innerWidth,
-        height: window.innerHeight,
-        style: {
-          transform: `translateY(-${window.scrollY}px)`,
-          transformOrigin: 'top left',
-        },
+      const mainContainer = document.getElementById('main-container');
+      const cameraColumn = document.getElementById('camera-column');
+
+      let captureHeight = mainContainer.scrollHeight;
+
+      if (cameraColumn && window.innerWidth < 1024) {
+        const mainRect = mainContainer.getBoundingClientRect();
+        const camRect = cameraColumn.getBoundingClientRect();
+
+        captureHeight = (camRect.bottom - mainRect.top) + 20;
+      }
+
+      const dataUrl = await toPng(mainContainer, {
         cacheBust: false, // تجنب مشاكل الروابط
-        filter: (node) => node.id !== 'screenshot-btn', // إخفاء زرار السكرين شوت
+        height: captureHeight,
+        style: {
+          // إجبار النسخة المصورة إنها تبدأ من فوق خالص (0,0) بغض النظر عن السكرول
+          position: 'absolute',
+          top: '0',
+          left: '0',
+          width: '100%',
+          margin: '0',
+          transform: 'none',
+        },
+        filter: (node) => node.id !== 'screenshot-btn' && node.tagName !== 'VIDEO' && node.id !== 'app-footer',
       });
 
       const link = document.createElement('a');
@@ -723,7 +743,12 @@ export default function App() {
 
     } catch (error) {
       console.error("Screenshot error:", error);
-      alert("حدث خطأ أثناء حفظ الصورة: " + error.message);
+      let msg = error.message;
+      // معالجة خطأ Event الغامض
+      if (!msg && error.type === 'error') {
+        msg = "فشل معالجة الصورة. حاول مرة أخرى.";
+      }
+      alert("حدث خطأ أثناء حفظ الصورة: " + (msg || "خطأ غير معروف"));
     } finally {
       // 3. تنظيف وإرجاع الفيديو
       if (placeholder) {
@@ -754,7 +779,7 @@ export default function App() {
         <ResolutionSection onScreenshot={handleScreenshot} />
 
         <div className="flex flex-col lg:flex-row gap-8 w-full max-w-6xl relative z-10">
-          <div className="flex flex-col items-center">
+          <div id="camera-column" className="flex flex-col items-center">
             <CameraView
               videoRef={videoRef}
               cameraWrapRef={cameraWrapRef}
@@ -812,7 +837,7 @@ export default function App() {
         <PhotoModal modalPhoto={modalPhoto} onClose={() => setModalPhoto(null)} onDownload={downloadOne} onDelete={() => { if (modalPhoto) deleteOne(modalPhoto.photo.id); setModalPhoto(null); }} onShare={sharePhoto} isShareSupported={isShareSupported}
         />
 
-        <footer className="w-full mt-8 flex justify-center">
+        <footer id="app-footer" className="w-full mt-8 flex justify-center">
           <div className="w-full max-w-6xl footer-glass p-4 rounded-xl flex items-center justify-between gap-4">
             <div className="text-sm text-white/90">Developed by <span className="font-semibold">Youssef Shoukry</span></div>
             <div className="text-sm">
