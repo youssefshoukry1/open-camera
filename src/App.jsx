@@ -689,8 +689,8 @@ export default function App() {
     let placeholder = null;
 
     try {
-      // استخدام toJpeg لأنه الحل الأكثر استقراراً للايفون (بيقلل استهلاك الذاكرة جداً)
-      const { toJpeg } = await import('html-to-image');
+      // استخدام toPng كما طلبت
+      const { toPng } = await import('html-to-image');
 
       // 1. معالجة الفيديو: تحويل الفريم الحالي لصورة Canvas
       // ده ضروري لأن مكتبات السكرين شوت مش بتشوف الفيديو اللايف
@@ -733,8 +733,8 @@ export default function App() {
           frameImg.style.visibility = 'hidden'; // إخفاء الفريم الأصلي مؤقتاً
         }
 
-        // تحويل الكانفاس لصورة JPEG (أخف بكتير من PNG وده بيحل مشكلة الاختفاء)
-        const frameData = canvas.toDataURL('image/jpeg', 0.85);
+        // تحويل الكانفاس لصورة PNG
+        const frameData = canvas.toDataURL('image/png');
         placeholder = document.createElement('img');
 
         placeholder.src = frameData;
@@ -774,8 +774,7 @@ export default function App() {
         captureHeight = (camRect.bottom - mainRect.top) + 20;
       }
 
-      const dataUrl = await toJpeg(mainContainer, {
-        quality: 0.95,
+      const dataUrl = await toPng(mainContainer, {
         cacheBust: false, // تجنب مشاكل الروابط
         height: captureHeight,
         pixelRatio: 1, // Fix for iOS: منع تكبير الصورة بشكل مبالغ فيه على شاشات الريتنا
