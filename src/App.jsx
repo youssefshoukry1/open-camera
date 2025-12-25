@@ -688,8 +688,8 @@ export default function App() {
     let placeholder = null;
 
     try {
-      // استخدام toPng مع انتظار التحميل (onload) لضمان ظهور الصورة
-      const { toPng } = await import('html-to-image');
+      // استخدام toJpeg بدلاً من toPng لأنه أخف وأكثر استقراراً على الايفون
+      const { toJpeg } = await import('html-to-image');
 
       // 1. معالجة الفيديو: تحويل الفريم الحالي لصورة Canvas
       // ده ضروري لأن مكتبات السكرين شوت مش بتشوف الفيديو اللايف
@@ -702,8 +702,8 @@ export default function App() {
         // رسم الفيديو الخام على الكانفاس
         ctx.drawImage(video, 0, 0);
 
-        // تحويل الكانفاس لصورة PNG
-        const frameData = canvas.toDataURL('image/png');
+        // تحويل الكانفاس لصورة JPEG (أخف من PNG)
+        const frameData = canvas.toDataURL('image/jpeg', 0.9);
         placeholder = document.createElement('img');
         placeholder.src = frameData;
 
@@ -725,7 +725,7 @@ export default function App() {
           else {
             placeholder.onload = resolve;
             placeholder.onerror = resolve; // استمرار حتى لو حصل خطأ بسيط
-            setTimeout(resolve, 500); // مهلة أمان
+            setTimeout(resolve, 1500); // زيادة وقت الانتظار
           }
         });
       }
@@ -745,7 +745,8 @@ export default function App() {
         captureHeight = (camRect.bottom - mainRect.top) + 20;
       }
 
-      const dataUrl = await toPng(mainContainer, {
+      const dataUrl = await toJpeg(mainContainer, {
+        quality: 0.95,
         cacheBust: false, // تجنب مشاكل الروابط
         height: captureHeight,
         pixelRatio: 1, // Fix for iOS: منع تكبير الصورة بشكل مبالغ فيه على شاشات الريتنا
@@ -762,7 +763,7 @@ export default function App() {
       });
 
       const link = document.createElement('a');
-      link.download = 'my-resolution.png';
+      link.download = 'my-resolution.jpg';
       link.href = dataUrl;
       link.click();
 
