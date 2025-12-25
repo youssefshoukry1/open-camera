@@ -701,21 +701,20 @@ export default function App() {
         // رسم الفيديو الخام على الكانفاس
         ctx.drawImage(video, 0, 0);
 
-        // Fix for iOS: تحويل الكانفاس لصورة img لأن سفاري بيواجه مشاكل مع الكانفاس داخل المكتبة
-        placeholder = document.createElement('img');
-        placeholder.src = canvas.toDataURL('image/png');
+        // استخدام الكانفاس نفسه كبديل (أخف وأسرع من تحويله لصورة base64)
+        placeholder = canvas;
 
         // نسخ نفس التنسيقات (بما في ذلك الفلاتر والقلب)
         placeholder.className = video.className;
         placeholder.style.cssText = video.style.cssText;
 
-        // استبدال الفيديو بالصورة مؤقتاً
+        // استبدال الفيديو بالكانفاس مؤقتاً
         video.parentNode.insertBefore(placeholder, video);
         video.style.display = 'none';
-
-        // انتظار تحميل الصورة للتأكد من ظهورها في الايفون
-        await new Promise(resolve => setTimeout(resolve, 200));
       }
+
+      // انتظار بسيط لتحديث الـ DOM
+      await new Promise(r => setTimeout(r, 150));
 
       // تفعيل وضع السكرين شوت (إيقاف الأنيميشن)
       if (mainContainer) mainContainer.classList.add('screenshot-mode');
