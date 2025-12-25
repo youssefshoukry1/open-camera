@@ -275,6 +275,64 @@ const Snowfall = () => {
   return <div className="snowfall-container" aria-hidden="true">{flakes}</div>;
 };
 
+// --- Resolution Section Component ---
+const ResolutionSection = ({ onScreenshot }) => {
+  const [text, setText] = useState("");
+  const [isEditing, setIsEditing] = useState(true);
+  const [showControls, setShowControls] = useState(false);
+
+  const handleSave = () => {
+    if (text.trim()) {
+      setIsEditing(false);
+      setShowControls(false);
+    }
+  };
+
+  const handleEdit = (e) => {
+    e.stopPropagation();
+    setIsEditing(true);
+    setShowControls(false);
+  };
+
+  const handleDelete = (e) => {
+    e.stopPropagation();
+    setText("");
+    setIsEditing(true);
+    setShowControls(false);
+  };
+
+  return (
+    <div className="w-full max-w-xl mx-auto mb-8 relative z-20 flex flex-col items-center">
+      {isEditing ? (
+        <div className="w-full flex flex-col items-center gap-2 animate-fade-in">
+          <div className="relative w-full max-w-md group">
+            <textarea value={text} onChange={(e) => setText(e.target.value)} placeholder="نفسك تحقق ايه السنة دي؟" className="w-full h-24 p-4 text-center bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl backdrop-blur-md text-white placeholder-white/40 focus:outline-none focus:border-white/30 focus:bg-white/10 transition-all resize-none shadow-lg" dir="rtl" maxLength={100} />
+            {text.trim() && (
+              <button onClick={handleSave} className="absolute bottom-3 left-3 p-2 bg-green-500/20 hover:bg-green-500/40 text-green-200 rounded-lg transition-all backdrop-blur-sm" title="حفظ">
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+              </button>
+            )}
+          </div>
+          <p className="text-white/50 text-sm font-light">يلا اكتب هدفك في السنة الجديدة ✨</p>
+        </div>
+      ) : (
+        <div className="flex flex-col items-center gap-4 animate-fade-in w-full">
+          <div onClick={() => setShowControls(!showControls)} className="relative cursor-pointer group px-8 py-6 bg-gradient-to-r from-white/5 to-white/10 border border-white/10 rounded-3xl backdrop-blur-md shadow-2xl hover:shadow-white/5 transition-all duration-300 transform hover:-translate-y-1">
+            <h2 className="text-2xl md:text-3xl font-bold text-center leading-relaxed" dir="rtl">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 to-amber-400">"</span><span className="text-white drop-shadow-lg mx-2">{text}</span><span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 to-amber-400">"</span><br className="md:hidden" /><span className="text-lg md:text-xl text-white/60 font-light mt-2 inline-block mx-2">والمرادي مش كليشيه 😉</span>
+            </h2>
+            <div className={`absolute -top-4 -left-4 flex gap-2 transition-all duration-300 ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'}`}>
+              <button onClick={handleEdit} className="p-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-lg shadow-blue-500/30 transition-transform hover:scale-110" title="تعديل"><svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" /></svg></button>
+              <button onClick={handleDelete} className="p-2.5 bg-red-500 hover:bg-red-600 text-white rounded-full shadow-lg shadow-red-500/30 transition-transform hover:scale-110" title="حذف"><svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" /></svg></button>
+            </div>
+          </div>
+          <button id="screenshot-btn" onClick={onScreenshot} className="flex items-center gap-2 px-5 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full backdrop-blur-md text-white/80 hover:text-white transition-all active:scale-95 group"><svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg><span className="text-sm font-medium">لقطة للشاشة</span></button>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // --- Global Styles ---
 const GlobalStyles = () => (
   <style>{`
@@ -330,8 +388,11 @@ const GlobalStyles = () => (
       from { transform: translateY(0px) translateX(0px) rotate(0deg); }
       to { transform: translateY(105vh) translateX(15px) rotate(270deg); }
     }
-
-
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
   `}</style>
 );
 
@@ -608,9 +669,68 @@ export default function App() {
     }
   };
 
+  const handleScreenshot = async () => {
+    try {
+      // استخدام Screen Capture API
+      // ده هيطلب من اليوزر يختار الشاشة أو التبويب
+      const stream = await navigator.mediaDevices.getDisplayMedia({
+        video: {
+          cursor: "never" // محاولة إخفاء الماوس
+        },
+        audio: false,
+        selfBrowserSurface: "include",
+        preferCurrentTab: true
+      });
+
+      const track = stream.getVideoTracks()[0];
+
+      // إخفاء زرار السكرين شوت مؤقتاً عشان مايظهرش في الصورة
+      const btn = document.getElementById('screenshot-btn');
+      if (btn) btn.style.opacity = '0';
+
+      // تشغيل الاستريم في فيديو مخفي لقراءة الفريم
+      const video = document.createElement('video');
+      video.srcObject = stream;
+      video.muted = true;
+      video.playsInline = true;
+      await video.play();
+
+      // انتظار بسيط (300ms) عشان نضمن إن الزرار اختفى والفريم اتحدث
+      await new Promise(r => setTimeout(r, 300));
+
+      // رسم الفريم في كانفاس
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0);
+
+      // تنظيف وإيقاف التسجيل
+      track.stop();
+      video.remove();
+      if (btn) btn.style.opacity = '1';
+
+      // تحميل الصورة
+      const link = document.createElement('a');
+      link.download = 'my-resolution.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+
+    } catch (error) {
+      console.error("Screenshot error:", error);
+      // إرجاع الزرار لو حصل خطأ
+      const btn = document.getElementById('screenshot-btn');
+      if (btn) btn.style.opacity = '1';
+
+      if (error.name !== 'NotAllowedError') {
+        alert("حدث خطأ أثناء تصوير الشاشة: " + error.message);
+      }
+    }
+  };
+
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-gray-800 via-red-950 to-gray-900 text-white flex flex-col items-center px-6 ">
+      <div id="main-container" className="min-h-screen bg-gradient-to-br from-gray-800 via-red-950 to-gray-900 text-white flex flex-col items-center p-6 ">
         <h1 className="text-5xl md:text-6xl font-black mb-4 py-6 relative z-10 flex items-center justify-center gap-3 drop-shadow-2xl" dir="rtl">
           <span className="text-4xl animate-bounce">🎄</span>
           <div className="">
@@ -623,6 +743,8 @@ export default function App() {
           </div>
           <span className="text-4xl animate-pulse">🌟</span>
         </h1>
+
+        <ResolutionSection onScreenshot={handleScreenshot} />
 
         <div className="flex flex-col lg:flex-row gap-8 w-full max-w-6xl relative z-10">
           <div className="flex flex-col items-center">
