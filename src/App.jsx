@@ -683,6 +683,7 @@ export default function App() {
   const handleScreenshot = async () => {
     const video = videoRef.current;
     const mainContainer = document.getElementById('main-container');
+    const wrap = cameraWrapRef.current;
     // حفظ حالة العرض الأصلية للفيديو
     const originalDisplay = video ? video.style.display : '';
     let placeholder = null;
@@ -693,30 +694,59 @@ export default function App() {
 
       // 1. معالجة الفيديو: تحويل الفريم الحالي لصورة Canvas
       // ده ضروري لأن مكتبات السكرين شوت مش بتشوف الفيديو اللايف
-      if (video && video.readyState >= 2) {
+      if (video && video.readyState >= 2 && wrap) {
+        // استخدام أبعاد الحاوية (Container) بدلاً من الفيديو لضمان عدم قص الفريم
+        const rect = wrap.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+
         const canvas = document.createElement('canvas');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
         const ctx = canvas.getContext('2d');
 
-        // رسم الفيديو الخام على الكانفاس
-        ctx.drawImage(video, 0, 0);
+        // حساب أبعاد الفيديو لتغطية الكانفاس (Object-fit: cover simulation)
+        const cw = canvas.width;
+        const ch = canvas.height;
+        const vw = video.videoWidth;
+        const vh = video.videoHeight;
+        const scale = Math.max(cw / vw, ch / vh);
+        const scaledW = vw * scale;
+        const scaledH = vh * scale;
+        const offsetX = (cw - scaledW) / 2;
+        const offsetY = (ch - scaledH) / 2;
+
+        ctx.save();
+        // تطبيق الفلاتر والقلب (Mirror) يدوياً على الكانفاس لأننا بنبني الصورة من الصفر
+        ctx.filter = `brightness(${0.85 + brightness * 0.3})`;
+        if (isMirrored) {
+          ctx.translate(cw, 0);
+          ctx.scale(-1, 1);
+        }
+        ctx.drawImage(video, offsetX, offsetY, scaledW, scaledH);
+        ctx.restore();
 
         // دمج الفريم مع الفيديو في نفس الصورة (حل نهائي للايفون)
         const frameImg = document.getElementById('frame-overlay');
         if (frameImg) {
-          ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
+          ctx.drawImage(frameImg, 0, 0, cw, ch);
           frameImg.style.visibility = 'hidden'; // إخفاء الفريم الأصلي مؤقتاً
         }
 
         // تحويل الكانفاس لصورة PNG
         const frameData = canvas.toDataURL('image/png');
         placeholder = document.createElement('img');
+
+        // إعداد وعد الانتظار قبل تعيين المصدر لضمان التقاط الحدث
+        const imageLoadPromise = new Promise((resolve) => {
+          placeholder.onload = () => setTimeout(resolve, 100); // انتظار بسيط بعد التحميل للرسم
+          placeholder.onerror = resolve;
+          setTimeout(resolve, 2000); // مهلة أمان
+        });
+
         placeholder.src = frameData;
 
-        // نسخ نفس التنسيقات (بما في ذلك الفلاتر والقلب)
+        // تعيين التنسيقات الأساسية فقط (بدون نسخ الفلاتر لأننا دمجناها بالفعل)
         placeholder.className = video.className;
-        placeholder.style.cssText = video.style.cssText;
         // تأكيد الأبعاد عشان الصورة تملأ المكان صح
         placeholder.style.width = '100%';
         placeholder.style.height = '100%';
@@ -726,15 +756,8 @@ export default function App() {
         video.parentNode.insertBefore(placeholder, video);
         video.style.display = 'none';
 
-        // انتظار تحميل الصورة تماماً قبل التصوير (مهم جداً للايفون)
-        await new Promise((resolve) => {
-          if (placeholder.complete) resolve();
-          else {
-            placeholder.onload = resolve;
-            placeholder.onerror = resolve; // استمرار حتى لو حصل خطأ بسيط
-            setTimeout(resolve, 1500); // زيادة وقت الانتظار
-          }
-        });
+        // انتظار تحميل الصورة
+        await imageLoadPromise;
       }
 
       // تفعيل وضع السكرين شوت (إيقاف الأنيميشن)
