@@ -397,6 +397,13 @@ const GlobalStyles = () => (
       to { opacity: 1; transform: translateY(0); }
     }
     .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+    
+    /* إجبار العناصر على الظهور فوراً أثناء السكرين شوت */
+    .screenshot-mode .animate-fade-in {
+      animation: none !important;
+      opacity: 1 !important;
+      transform: none !important;
+    }
   `}</style>
 );
 
@@ -675,6 +682,7 @@ export default function App() {
 
   const handleScreenshot = async () => {
     const video = videoRef.current;
+    const mainContainer = document.getElementById('main-container');
     // حفظ حالة العرض الأصلية للفيديو
     const originalDisplay = video ? video.style.display : '';
     let placeholder = null;
@@ -708,8 +716,10 @@ export default function App() {
       // انتظار بسيط لتحديث الـ DOM
       await new Promise(r => setTimeout(r, 100));
 
+      // تفعيل وضع السكرين شوت (إيقاف الأنيميشن)
+      if (mainContainer) mainContainer.classList.add('screenshot-mode');
+
       // 2. التقاط الصورة
-      const mainContainer = document.getElementById('main-container');
       const cameraColumn = document.getElementById('camera-column');
 
       let captureHeight = mainContainer.scrollHeight;
@@ -756,6 +766,9 @@ export default function App() {
       }
       if (video) {
         video.style.display = originalDisplay;
+      }
+      if (mainContainer) {
+        mainContainer.classList.remove('screenshot-mode');
       }
     }
   };
