@@ -689,15 +689,16 @@ export default function App() {
     let placeholder = null;
 
     try {
-      // استخدام toPng كما طلبت
-      const { toPng } = await import('html-to-image');
+      // استخدام toJpeg لأنه الحل الأكثر استقراراً للايفون (بيقلل استهلاك الذاكرة جداً)
+      const { toJpeg } = await import('html-to-image');
 
       // 1. معالجة الفيديو: تحويل الفريم الحالي لصورة Canvas
       // ده ضروري لأن مكتبات السكرين شوت مش بتشوف الفيديو اللايف
       if (video && video.readyState >= 2 && wrap) {
         // استخدام أبعاد الحاوية (Container) بدلاً من الفيديو لضمان عدم قص الفريم
         const rect = wrap.getBoundingClientRect();
-        const dpr = window.devicePixelRatio || 1;
+        // تقليل دقة الصورة المؤقتة للايفون لتجنب مشاكل الذاكرة (Max 2x)
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
         const canvas = document.createElement('canvas');
         canvas.width = rect.width * dpr;
@@ -732,18 +733,19 @@ export default function App() {
           frameImg.style.visibility = 'hidden'; // إخفاء الفريم الأصلي مؤقتاً
         }
 
-        // تحويل الكانفاس لصورة PNG
-        const frameData = canvas.toDataURL('image/png');
+        // تحويل الكانفاس لصورة JPEG (أخف بكتير من PNG وده بيحل مشكلة الاختفاء)
+        const frameData = canvas.toDataURL('image/jpeg', 0.85);
         placeholder = document.createElement('img');
 
-        // إعداد وعد الانتظار قبل تعيين المصدر لضمان التقاط الحدث
-        const imageLoadPromise = new Promise((resolve) => {
-          placeholder.onload = () => setTimeout(resolve, 100); // انتظار بسيط بعد التحميل للرسم
-          placeholder.onerror = resolve;
-          setTimeout(resolve, 2000); // مهلة أمان
-        });
-
         placeholder.src = frameData;
+
+        // انتظار فك تشفير الصورة (أضمن طريقة في المتصفحات الحديثة)
+        try {
+          await placeholder.decode();
+        } catch (e) {
+          // Fallback لو المتصفح قديم
+          await new Promise(r => setTimeout(r, 200));
+        }
 
         // تعيين التنسيقات الأساسية فقط (بدون نسخ الفلاتر لأننا دمجناها بالفعل)
         placeholder.className = video.className;
@@ -755,9 +757,6 @@ export default function App() {
         // استبدال الفيديو بالصورة مؤقتاً
         video.parentNode.insertBefore(placeholder, video);
         video.style.display = 'none';
-
-        // انتظار تحميل الصورة
-        await imageLoadPromise;
       }
 
       // تفعيل وضع السكرين شوت (إيقاف الأنيميشن)
@@ -775,7 +774,8 @@ export default function App() {
         captureHeight = (camRect.bottom - mainRect.top) + 20;
       }
 
-      const dataUrl = await toPng(mainContainer, {
+      const dataUrl = await toJpeg(mainContainer, {
+        quality: 0.95,
         cacheBust: false, // تجنب مشاكل الروابط
         height: captureHeight,
         pixelRatio: 1, // Fix for iOS: منع تكبير الصورة بشكل مبالغ فيه على شاشات الريتنا
