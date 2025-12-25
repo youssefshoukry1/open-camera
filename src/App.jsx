@@ -670,60 +670,67 @@ export default function App() {
   };
 
   const handleScreenshot = async () => {
+    const video = videoRef.current;
+    // حفظ حالة العرض الأصلية للفيديو
+    const originalDisplay = video ? video.style.display : '';
+    let placeholder = null;
+
     try {
-      // استخدام Screen Capture API
-      // ده هيطلب من اليوزر يختار الشاشة أو التبويب
-      const stream = await navigator.mediaDevices.getDisplayMedia({
-        video: {
-          cursor: "never" // محاولة إخفاء الماوس
+      const { toPng } = await import('html-to-image');
+
+      // 1. معالجة الفيديو: تحويل الفريم الحالي لصورة Canvas
+      // ده ضروري لأن مكتبات السكرين شوت مش بتشوف الفيديو اللايف
+      if (video && video.readyState >= 2) {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+
+        // رسم الفيديو الخام على الكانفاس
+        ctx.drawImage(video, 0, 0);
+
+        // إنشاء عنصر صورة بديل
+        placeholder = document.createElement('img');
+        placeholder.src = canvas.toDataURL('image/png');
+
+        // نسخ نفس التنسيقات (بما في ذلك الفلاتر والقلب)
+        placeholder.className = video.className;
+        placeholder.style.cssText = video.style.cssText;
+
+        // استبدال الفيديو بالصورة مؤقتاً
+        video.parentNode.insertBefore(placeholder, video);
+        video.style.display = 'none';
+      }
+
+      // 2. التقاط الصورة
+      // بنحدد العرض والارتفاع بناءً على الشاشة الحالية (Viewport)
+      // وبنعمل إزاحة للمحتوى عشان نعوض السكرول (translateY)
+      const dataUrl = await toPng(document.getElementById('main-container') || document.body, {
+        width: window.innerWidth,
+        height: window.innerHeight,
+        style: {
+          transform: `translateY(-${window.scrollY}px)`,
+          transformOrigin: 'top left',
         },
-        audio: false,
-        selfBrowserSurface: "include",
-        preferCurrentTab: true
+        cacheBust: false, // تجنب مشاكل الروابط
+        filter: (node) => node.id !== 'screenshot-btn', // إخفاء زرار السكرين شوت
       });
 
-      const track = stream.getVideoTracks()[0];
-
-      // إخفاء زرار السكرين شوت مؤقتاً عشان مايظهرش في الصورة
-      const btn = document.getElementById('screenshot-btn');
-      if (btn) btn.style.opacity = '0';
-
-      // تشغيل الاستريم في فيديو مخفي لقراءة الفريم
-      const video = document.createElement('video');
-      video.srcObject = stream;
-      video.muted = true;
-      video.playsInline = true;
-      await video.play();
-
-      // انتظار بسيط (300ms) عشان نضمن إن الزرار اختفى والفريم اتحدث
-      await new Promise(r => setTimeout(r, 300));
-
-      // رسم الفريم في كانفاس
-      const canvas = document.createElement('canvas');
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(video, 0, 0);
-
-      // تنظيف وإيقاف التسجيل
-      track.stop();
-      video.remove();
-      if (btn) btn.style.opacity = '1';
-
-      // تحميل الصورة
       const link = document.createElement('a');
       link.download = 'my-resolution.png';
-      link.href = canvas.toDataURL('image/png');
+      link.href = dataUrl;
       link.click();
 
     } catch (error) {
       console.error("Screenshot error:", error);
-      // إرجاع الزرار لو حصل خطأ
-      const btn = document.getElementById('screenshot-btn');
-      if (btn) btn.style.opacity = '1';
-
-      if (error.name !== 'NotAllowedError') {
-        alert("حدث خطأ أثناء تصوير الشاشة: " + error.message);
+      alert("حدث خطأ أثناء حفظ الصورة: " + error.message);
+    } finally {
+      // 3. تنظيف وإرجاع الفيديو
+      if (placeholder) {
+        placeholder.remove();
+      }
+      if (video) {
+        video.style.display = originalDisplay;
       }
     }
   };
