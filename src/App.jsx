@@ -13,7 +13,11 @@ function useCamera(videoRef, facingMode) {
     async function start() {
       try {
         stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode },
+          video: {
+            facingMode,
+            width: { ideal: 4096 }, // طلب أعلى دقة عرض ممكنة (4K)
+            height: { ideal: 2160 } // طلب أعلى دقة طول ممكنة
+          },
           audio: false,
         });
         if (mounted && videoRef.current) {
@@ -548,42 +552,56 @@ export default function App() {
     try {
       const wrap = cameraWrapRef.current;
       const rect = wrap.getBoundingClientRect();
-      const dpr = window.devicePixelRatio || 1;
 
-      canvas.width = Math.round(rect.width * dpr);
-      canvas.height = Math.round(rect.height * dpr);
-      const ctx = canvas.getContext("2d");
-      ctx.scale(dpr, dpr);
-
-      // 1. Draw Video with correct aspect ratio and brightness
-      ctx.filter = `brightness(${0.85 + brightness * 0.3})`;
+      // استخدام دقة الفيديو الأصلية بدلاً من دقة الشاشة للحصول على أعلى جودة
       const vW = video.videoWidth;
       const vH = video.videoHeight;
-      const scale = Math.max(rect.width / vW, rect.height / vH);
-      const renderedW = vW * scale;
-      const renderedH = vH * scale;
-      const offsetX = (renderedW - rect.width) / 2;
-      const offsetY = (renderedH - rect.height) / 2;
-      const sx = offsetX / scale;
-      const sy = offsetY / scale;
-      const sWidth = rect.width / scale;
-      const sHeight = rect.height / scale;
+
+      // حساب نسب الأبعاد
+      const rectAspect = rect.width / rect.height;
+      const videoAspect = vW / vH;
+
+      let drawW, drawH, startX, startY;
+
+      // محاكاة object-fit: cover بس على دقة الفيديو الأصلية
+      if (rectAspect > videoAspect) {
+        // الكونتينر أعرض من الفيديو (بالنسبة للطول)
+        drawW = vW;
+        drawH = vW / rectAspect;
+        startX = 0;
+        startY = (vH - drawH) / 2;
+      } else {
+        // الكونتينر أطول من الفيديو
+        drawH = vH;
+        drawW = vH * rectAspect;
+        startX = (vW - drawW) / 2;
+        startY = 0;
+      }
+
+      // ضبط الكانفاس على الحجم المقصوص عالي الجودة
+      canvas.width = Math.round(drawW);
+      canvas.height = Math.round(drawH);
+
+      const ctx = canvas.getContext("2d");
+
+      // 1. رسم الفيديو
+      ctx.filter = `brightness(${0.85 + brightness * 0.3})`;
 
       if (isMirrored) {
         ctx.save();
-        ctx.translate(rect.width, 0);
+        ctx.translate(canvas.width, 0);
         ctx.scale(-1, 1);
-        ctx.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, rect.width, rect.height);
+        ctx.drawImage(video, startX, startY, drawW, drawH, 0, 0, canvas.width, canvas.height);
         ctx.restore();
       } else {
-        ctx.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, rect.width, rect.height);
+        ctx.drawImage(video, startX, startY, drawW, drawH, 0, 0, canvas.width, canvas.height);
       }
       ctx.filter = 'none'; // Reset filter
 
       // 2. Draw Frame
       const frameImg = await loadImage(assets.frame);
       if (frameImg) {
-        ctx.drawImage(frameImg, 0, 0, rect.width, rect.height);
+        ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
       }
 
       // 3. Draw Logo
