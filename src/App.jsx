@@ -279,11 +279,30 @@ const Snowfall = () => {
   return <div className="snowfall-container" aria-hidden="true">{flakes}</div>;
 };
 
+// --- Simple Confetti Component ---
+const SimpleConfetti = () => {
+  const particles = Array.from({ length: 50 }).map((_, i) => {
+    const isLeft = i % 2 === 0;
+    const startX = isLeft ? Math.random() * 30 : 70 + Math.random() * 30;
+    const color = ['#ef4444', '#22c55e', '#fbbf24', '#ffffff', '#60a5fa'][Math.floor(Math.random() * 5)];
+    return (
+      <div
+        key={i}
+        className="ribbon-particle"
+        style={{ '--x': `${(Math.random() - 0.5) * 100}px`, '--y': `-${300 + Math.random() * 200}px`, '--r': `${(Math.random() - 0.5) * 720}deg`, '--c': color, left: `${startX}%`, animationDelay: `${Math.random() * 0.5}s` }}
+      />
+    );
+  });
+  return <div className="absolute inset-0 pointer-events-none z-[100] overflow-visible">{particles}</div>;
+};
+
 // --- Resolution Section Component ---
 const ResolutionSection = () => {
   const [text, setText] = useState(() => localStorage.getItem('resolutionText') || "");
   const [isEditing, setIsEditing] = useState(() => !localStorage.getItem('resolutionText'));
   const [showControls, setShowControls] = useState(false);
+  const [showHint, setShowHint] = useState(false);
+  const [celebrating, setCelebrating] = useState(false);
 
   useEffect(() => {
     localStorage.setItem('resolutionText', text);
@@ -293,6 +312,8 @@ const ResolutionSection = () => {
     if (text.trim()) {
       setIsEditing(false);
       setShowControls(false);
+      setCelebrating(true);
+      setTimeout(() => setCelebrating(false), 2000);
     }
   };
 
@@ -314,17 +335,25 @@ const ResolutionSection = () => {
       {isEditing ? (
         <div className="w-full flex flex-col items-center gap-2 animate-fade-in">
           <div className="relative w-full max-w-md group">
-            <textarea value={text} onChange={(e) => setText(e.target.value)} placeholder="نفسك تحقق ايه السنة دي؟" className="w-full h-24 p-4 text-center bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl backdrop-blur-md text-white placeholder-white/40 focus:outline-none focus:border-white/30 focus:bg-white/10 transition-all resize-none shadow-lg" dir="rtl" maxLength={100} />
+            <textarea value={text} onChange={(e) => setText(e.target.value)} onFocus={() => setShowHint(true)} placeholder="نفسك تحقق ايه السنة دي؟" className="w-full h-24 p-4 text-center bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl backdrop-blur-md text-white placeholder-white/40 focus:outline-none focus:border-white/30 focus:bg-white/10 transition-all resize-none shadow-lg" dir="rtl" maxLength={100} />
             {text.trim() && (
               <button onClick={handleSave} className="absolute bottom-3 left-3 p-2 bg-green-500/20 hover:bg-green-500/40 text-green-200 rounded-lg transition-all backdrop-blur-sm" title="حفظ">
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
               </button>
             )}
           </div>
-          <p className="text-white/50 text-sm font-light">يلا اكتب هدفك في السنة الجديدة ✨</p>
+          {showHint ? (
+            <div className="mt-2 px-4 py-2 bg-yellow-500/10 border border-yellow-500/20 rounded-xl text-yellow-100 text-xs md:text-sm text-center hint-box backdrop-blur-md flex items-center justify-center gap-2 max-w-md">
+              <span className="text-lg">📸</span>
+              <span>اكتب هدفك وخد وضعية واتصور سكرين شوت مع هدفك، الزرار تحت جمب زرار الكاميرا</span>
+            </div>
+          ) : (
+            <p className="text-white/50 text-sm font-light">يلا اكتب هدفك في السنة الجديدة ✨</p>
+          )}
         </div>
       ) : (
         <div className="flex flex-col items-center gap-4 animate-fade-in w-full">
+          {celebrating && <SimpleConfetti />}
           <div onClick={() => setShowControls(!showControls)} className="relative cursor-pointer group px-8 py-6 bg-gradient-to-r from-white/5 to-white/10 border border-white/10 rounded-3xl backdrop-blur-md shadow-2xl hover:shadow-white/5 transition-all duration-300 transform hover:-translate-y-1">
             <h2 className="text-2xl md:text-3xl font-bold text-center leading-relaxed" dir="rtl">
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 to-amber-400">"</span><span className="text-white drop-shadow-lg mx-2">{text}</span><span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 to-amber-400">"</span><br className="md:hidden" /><span className="text-lg md:text-xl text-white/60 font-light mt-2 inline-block mx-2">والمرادي مش كليشيه 😉</span>
@@ -400,6 +429,22 @@ const GlobalStyles = () => (
       to { opacity: 1; transform: translateY(0); }
     }
     .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+    .ribbon-particle {
+      position: absolute;
+      bottom: 0;
+      width: 10px;
+      height: 25px;
+      background-color: var(--c);
+      opacity: 0;
+      animation: ribbonShoot 2s ease-out forwards;
+    }
+    @keyframes ribbonShoot {
+      0% { transform: translate(0, 0) rotate(0deg) scale(0.5); opacity: 1; }
+      80% { opacity: 1; }
+      100% { transform: translate(var(--x), var(--y)) rotate(var(--r)) scale(1); opacity: 0; }
+    }
+    .hint-box { animation: slideUp 0.3s ease-out forwards; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     
     /* إجبار العناصر على الظهور فوراً أثناء السكرين شوت */
     .screenshot-mode .animate-fade-in {
