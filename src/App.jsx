@@ -344,7 +344,6 @@ const ResolutionSection = () => {
           </div>
           {showHint ? (
             <div className="mt-2 px-4 py-2 bg-yellow-500/10 border border-yellow-500/20 rounded-xl text-yellow-100 text-xs md:text-sm text-center hint-box backdrop-blur-md flex items-center justify-center gap-2 max-w-md">
-              <span className="text-lg">📸</span>
               <span>اكتب هدفك وخد وضعية واتصور سكرين شوت مع هدفك، الزرار تحت جمب زرار الكاميرا</span>
             </div>
           ) : (
