@@ -603,15 +603,81 @@ export default function App() {
       }
       ctx.filter = 'none'; // Reset filter
 
-      // 3. Draw Logo
-      // const logoImg = await loadImage(assets.logo);
-      // if (logoImg) {
-      //   const logoWidth = Math.round(rect.width * 0.18);
-      //   const logoHeight = Math.round(logoWidth * (logoImg.height / logoImg.width));
-      //   const logoX = rect.width - logoWidth - 6; // Match right: 6px
-      //   const logoY = 36; // Match top-9 (36px)
-      //   ctx.drawImage(logoImg, logoX, logoY, logoWidth, logoHeight);
-      // }
+      // Calculate scale based on the ratio between canvas width (high res) and displayed width (CSS pixels)
+      const scale = canvas.width / rect.width;
+
+      // 2. Draw Logo
+      if (assets.logo) {
+        const logoImg = await loadImage(assets.logo);
+        if (logoImg) {
+          // CSS: w-16 (64px), right: 6px, top: 36px (top-9)
+          const logoWidth = 64 * scale;
+          const logoHeight = logoWidth * (logoImg.height / logoImg.width);
+          const logoMarginRight = 6 * scale;
+          const logoMarginTop = 36 * scale;
+
+          const logoX = canvas.width - logoWidth - logoMarginRight;
+          const logoY = logoMarginTop;
+
+          ctx.drawImage(logoImg, logoX, logoY, logoWidth, logoHeight);
+        }
+      }
+
+      // 3. Draw Text Overlay
+      const overlayText = "لأَنَّ كُلَّ الَّذِينَ يَنْقَادُونَ بِرُوحِ اللهِ، فَأُولئِكَ هُمْ أَبْنَاءُ اللهِ";
+
+      // Font settings
+      const fontSize = 15 * scale; // Scaled font size
+      ctx.font = `bold ${fontSize}px Arial, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      // Measure text for background box
+      const textMetrics = ctx.measureText(overlayText);
+      const textWidth = textMetrics.width;
+      const paddingX = 20 * scale;
+      const paddingY = 16 * scale;
+      const boxWidth = textWidth + (paddingX * 2);
+      const boxHeight = fontSize * 2.8;
+
+      // Position: Bottom center, margin bottom 16px (bottom-4)
+      const marginBottom = 16 * scale;
+      const boxX = (canvas.width - boxWidth) / 2;
+      const boxY = canvas.height - boxHeight - marginBottom;
+      const borderRadius = 16 * scale;
+
+      ctx.save();
+      // Draw Background Box
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.4)'; // bg-black/40
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)'; // border-white/20
+      ctx.lineWidth = 1 * scale;
+
+      ctx.beginPath();
+      if (ctx.roundRect) {
+        ctx.roundRect(boxX, boxY, boxWidth, boxHeight, borderRadius);
+      } else {
+        // Fallback for older browsers
+        ctx.moveTo(boxX + borderRadius, boxY);
+        ctx.lineTo(boxX + boxWidth - borderRadius, boxY);
+        ctx.quadraticCurveTo(boxX + boxWidth, boxY, boxX + boxWidth, boxY + borderRadius);
+        ctx.lineTo(boxX + boxWidth, boxY + boxHeight - borderRadius);
+        ctx.quadraticCurveTo(boxX + boxWidth, boxY + boxHeight, boxX + boxWidth - borderRadius, boxY + boxHeight);
+        ctx.lineTo(boxX + borderRadius, boxY + boxHeight);
+        ctx.quadraticCurveTo(boxX, boxY + boxHeight, boxX, boxY + boxHeight - borderRadius);
+        ctx.lineTo(boxX, boxY + borderRadius);
+        ctx.quadraticCurveTo(boxX, boxY, boxX + borderRadius, boxY);
+      }
+      ctx.fill();
+      ctx.stroke();
+
+      // Draw Text
+      ctx.fillStyle = 'white';
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+      ctx.shadowBlur = 4 * scale;
+      ctx.shadowOffsetY = 2 * scale;
+
+      ctx.fillText(overlayText, canvas.width / 2, boxY + (boxHeight / 2));
+      ctx.restore();
 
       const dataUrl = canvas.toDataURL("image/png", 0.95);
 
