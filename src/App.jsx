@@ -166,8 +166,8 @@ const CameraView = ({
           {assets.logo && <img src={assets.logo} alt="logo" className="w-16 h-16 object-contain rounded-lg" style={{ display: 'block' }} />}
         </div>
         {/* Arabic Text Overlay */}
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 px-4 py-4 bg-black/40 backdrop-blur-md rounded-2xl border border-white/20 text-center max-w-[90%] shadow-lg">
-          <p className="text-sm md:text-base font-bold text-white leading-relaxed drop-shadow-md" dir="rtl" style={{ fontFamily: 'Arial, sans-serif', letterSpacing: '0.5px' }}>
+        <div className="absolute left-1/2 transform -translate-x-1/2 bg-black/40 backdrop-blur-md rounded-2xl border border-white/20 text-center shadow-lg" style={{ width: '90%', bottom: '24px', padding: '16px' }}>
+          <p className="font-bold text-white drop-shadow-md" dir="rtl" style={{ fontFamily: 'Arial, sans-serif', fontSize: '15px', lineHeight: '1.6', margin: 0 }}>
             لأَنَّ كُلَّ الَّذِينَ يَنْقَادُونَ بِرُوحِ اللهِ، فَأُولئِكَ هُمْ أَبْنَاءُ اللهِ
           </p>
         </div>
@@ -627,36 +627,50 @@ export default function App() {
       const overlayText = "لأَنَّ كُلَّ الَّذِينَ يَنْقَادُونَ بِرُوحِ اللهِ، فَأُولئِكَ هُمْ أَبْنَاءُ اللهِ";
 
       // Font settings
-      const fontSize = 15 * scale; // Scaled font size
+      // Match CSS: 15px fixed, 1.6 line height
+      const fontSize = 15 * scale;
+      const lineHeight = fontSize * 1.6;
       ctx.font = `bold ${fontSize}px Arial, sans-serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
 
-      // Measure text for background box
-      const textMetrics = ctx.measureText(overlayText);
-      const textWidth = textMetrics.width;
-      const paddingX = 20 * scale;
-      const paddingY = 16 * scale;
-      const boxWidth = textWidth + (paddingX * 2);
-      const boxHeight = fontSize * 2.8;
+      // Constraints
+      const boxWidth = canvas.width * 0.9; // Fixed 90% width
+      const padding = 16 * scale; // 16px padding
+      const maxTextWidth = boxWidth - (padding * 2);
 
-      // Position: Bottom center, margin bottom 16px (bottom-4)
-      const marginBottom = 16 * scale;
+      // Word Wrap Logic
+      const words = overlayText.split(' ');
+      let lines = [];
+      let currentLine = words[0];
+
+      for (let i = 1; i < words.length; i++) {
+        const word = words[i];
+        const width = ctx.measureText(currentLine + " " + word).width;
+        if (width < maxTextWidth) {
+          currentLine += " " + word;
+        } else {
+          lines.push(currentLine);
+          currentLine = word;
+        }
+      }
+      lines.push(currentLine);
+
+      // Calculate Box Dimensions
+      // Box width is fixed at 90% of canvas
+      const boxHeight = (lines.length * lineHeight) + (padding * 2); // Height based on content
+
+      // Position: Bottom center, margin bottom 24px
+      const marginBottom = 24 * scale;
       const boxX = (canvas.width - boxWidth) / 2;
       const boxY = canvas.height - boxHeight - marginBottom;
       const borderRadius = 16 * scale;
 
-      ctx.save();
-      // Draw Background Box
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.4)'; // bg-black/40
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)'; // border-white/20
-      ctx.lineWidth = 1 * scale;
-
+      // Define Path for Box
       ctx.beginPath();
       if (ctx.roundRect) {
         ctx.roundRect(boxX, boxY, boxWidth, boxHeight, borderRadius);
       } else {
-        // Fallback for older browsers
         ctx.moveTo(boxX + borderRadius, boxY);
         ctx.lineTo(boxX + boxWidth - borderRadius, boxY);
         ctx.quadraticCurveTo(boxX + boxWidth, boxY, boxX + boxWidth, boxY + borderRadius);
@@ -667,16 +681,48 @@ export default function App() {
         ctx.lineTo(boxX, boxY + borderRadius);
         ctx.quadraticCurveTo(boxX, boxY, boxX + borderRadius, boxY);
       }
-      ctx.fill();
-      ctx.stroke();
+      ctx.closePath();
 
-      // Draw Text
+      // A. Apply Backdrop Blur (Glass Effect)
+      ctx.save();
+      ctx.clip();
+      ctx.filter = `blur(${12 * scale}px)`; // backdrop-blur-md
+      // Redraw video into clipped area to create blur
+      if (isMirrored) {
+        ctx.save();
+        ctx.translate(canvas.width, 0);
+        ctx.scale(-1, 1);
+        ctx.drawImage(video, startX, startY, drawW, drawH, 0, 0, canvas.width, canvas.height);
+        ctx.restore();
+      } else {
+        ctx.drawImage(video, startX, startY, drawW, drawH, 0, 0, canvas.width, canvas.height);
+      }
+      ctx.restore();
+
+      // B. Draw Box Background, Border, and Shadow
+      ctx.save();
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.4)'; // bg-black/40
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)'; // border-white/20
+      ctx.lineWidth = 1 * scale;
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.3)'; // shadow-lg
+      ctx.shadowBlur = 15 * scale;
+      ctx.shadowOffsetY = 10 * scale;
+      ctx.fill();
+      ctx.shadowColor = 'transparent'; // Clear shadow for stroke
+      ctx.stroke();
+      ctx.restore();
+
+      // C. Draw Text
+      ctx.save();
       ctx.fillStyle = 'white';
       ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
       ctx.shadowBlur = 4 * scale;
       ctx.shadowOffsetY = 2 * scale;
 
-      ctx.fillText(overlayText, canvas.width / 2, boxY + (boxHeight / 2));
+      lines.forEach((line, i) => {
+        const lineY = boxY + padding + (lineHeight / 2) + (i * lineHeight);
+        ctx.fillText(line, canvas.width / 2, lineY);
+      });
       ctx.restore();
 
       const dataUrl = canvas.toDataURL("image/png", 0.95);
