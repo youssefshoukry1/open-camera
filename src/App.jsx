@@ -162,7 +162,7 @@ const CameraView = ({
           style={{ filter: `brightness(${0.85 + brightness * 0.3})`, transition: 'filter 160ms linear', transform: isMirrored ? 'scaleX(-1)' : 'none' }}
         />
         {isFlashing && <div className="camera-flash-overlay" />}
-        <div className="absolute left-4 top-9" style={{ left: 'auto', right: '6px' }}>
+        <div className="absolute left-4 top-4" style={{ left: 'auto', right: '6px' }}>
           {assets.logo && <img src={assets.logo} alt="logo" className="w-16 h-16 object-contain rounded-lg" style={{ display: 'block' }} />}
         </div>
         {/* Arabic Text Overlay */}
@@ -344,7 +344,7 @@ const ResolutionSection = () => {
       {isEditing ? (
         <div className="w-full flex flex-col items-center gap-2 animate-fade-in">
           <div className="relative w-full max-w-md group">
-            <textarea value={text} onChange={(e) => setText(e.target.value)} onFocus={() => setShowHint(true)} placeholder="نفسك تحقق ايه السنة دي؟" className="w-full h-24 p-4 text-center bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl backdrop-blur-md text-white placeholder-white/40 focus:outline-none focus:border-white/30 focus:bg-white/10 transition-all resize-none shadow-lg" dir="rtl" maxLength={100} />
+            <textarea value={text} onChange={(e) => setText(e.target.value)} onFocus={() => setShowHint(true)} placeholder="لو ربنا سامعك دلوقتي... تحب تقوله ايه في ميلاده" className="w-full h-24 p-4 text-center bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl backdrop-blur-md text-white placeholder-white/40 focus:outline-none focus:border-white/30 focus:bg-white/10 transition-all resize-none shadow-lg" dir="rtl" maxLength={100} />
             {text.trim() && (
               <button onClick={handleSave} className="absolute bottom-3 left-3 p-2 bg-green-500/20 hover:bg-green-500/40 text-green-200 rounded-lg transition-all backdrop-blur-sm" title="حفظ">
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
@@ -353,10 +353,10 @@ const ResolutionSection = () => {
           </div>
           {showHint ? (
             <div className="mt-2 px-4 py-2 bg-yellow-500/10 border border-yellow-500/20 rounded-xl text-yellow-100 text-xs md:text-sm text-center hint-box backdrop-blur-md flex items-center justify-center gap-2 max-w-md">
-              <span>اكتب هدفك وخد وضعية واتصور سكرين شوت مع هدفك، الزرار تحت جمب زرار الكاميرا</span>
+              <span>اكتب وخد وضعية واتصور سكرين شوت مع هدفك، الزرار تحت جمب زرار الكاميرا</span>
             </div>
           ) : (
-            <p className="text-white/50 text-sm font-light">يلا اكتب هدفك في السنة الجديدة ✨</p>
+            <p className="text-white/50 text-sm font-light">يلا اكتب هاتقوله ايه ✨</p>
           )}
         </div>
       ) : (
@@ -610,11 +610,11 @@ export default function App() {
       if (assets.logo) {
         const logoImg = await loadImage(assets.logo);
         if (logoImg) {
-          // CSS: w-16 (64px), right: 6px, top: 36px (top-9)
+          // CSS: w-16 (64px), right: 6px, top: 16px (top-4)
           const logoWidth = 64 * scale;
           const logoHeight = logoWidth * (logoImg.height / logoImg.width);
           const logoMarginRight = 6 * scale;
-          const logoMarginTop = 36 * scale;
+          const logoMarginTop = 16 * scale;
 
           const logoX = canvas.width - logoWidth - logoMarginRight;
           const logoY = logoMarginTop;
