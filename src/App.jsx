@@ -162,10 +162,15 @@ const CameraView = ({
           style={{ filter: `brightness(${0.85 + brightness * 0.3})`, transition: 'filter 160ms linear', transform: isMirrored ? 'scaleX(-1)' : 'none' }}
         />
         {isFlashing && <div className="camera-flash-overlay" />}
-        {assets.frame && <img id="frame-overlay" src={assets.frame} alt="frame overlay" className="pointer-events-none absolute inset-0 w-full h-full object-cover" />}
-        {/* <div className="absolute left-4 top-9" style={{ left: 'auto', right: '6px' }}>
+        <div className="absolute left-4 top-9" style={{ left: 'auto', right: '6px' }}>
           {assets.logo && <img src={assets.logo} alt="logo" className="w-16 h-16 object-contain rounded-lg" style={{ display: 'block' }} />}
-        </div> */}
+        </div>
+        {/* Arabic Text Overlay */}
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 px-4 py-4 bg-black/40 backdrop-blur-md rounded-2xl border border-white/20 text-center max-w-[90%] shadow-lg">
+          <p className="text-sm md:text-base font-bold text-white leading-relaxed drop-shadow-md" dir="rtl" style={{ fontFamily: 'Arial, sans-serif', letterSpacing: '0.5px' }}>
+            لأَنَّ كُلَّ الَّذِينَ يَنْقَادُونَ بِرُوحِ اللهِ، فَأُولئِكَ هُمْ أَبْنَاءُ اللهِ
+          </p>
+        </div>
       </div>
       <div className="relative w-full mt-6 flex items-center justify-center">
         <button id="screenshot-btn" onClick={onScreenshot} className="absolute left-6 top-1/2 -translate-y-1/2 p-3 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/10 rounded-full shadow-lg transition active:scale-95 flex items-center justify-center" title="لقطة للشاشة">
@@ -197,7 +202,7 @@ const Gallery = ({ photos, onSelectPhoto, downloadOne, deleteOne, shareOne, isSh
   if (!photos || photos.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-96 rounded-2xl bg-slate-800/30">
-        <p className="text-slate-400 text-center">Your gallery is empty!<br />Take a festive photo to get started.</p>
+        <p className="text-slate-400 text-center">Your gallery is empty!<br />Take a birthday photo to get started.</p>
       </div>
     );
   }
@@ -359,7 +364,7 @@ const ResolutionSection = () => {
           {celebrating && <SimpleConfetti />}
           <div onClick={() => setShowControls(!showControls)} className="relative cursor-pointer group px-8 py-6 bg-gradient-to-r from-white/5 to-white/10 border border-white/10 rounded-3xl backdrop-blur-md shadow-2xl hover:shadow-white/5 transition-all duration-300 transform hover:-translate-y-1">
             <h2 className="text-2xl md:text-3xl font-bold text-center leading-relaxed" dir="rtl">
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 to-amber-400">"</span><span className="text-white drop-shadow-lg mx-2">{text}</span><span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 to-amber-400">"</span><br className="md:hidden" /><span className="text-lg md:text-xl text-white/60 font-light mt-2 inline-block mx-2">والمرادي مش كليشيه 😉</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-white">"</span><span className="text-white drop-shadow-lg mx-2">{text}</span><span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-white">"</span><br className="md:hidden" /><span className="text-lg md:text-xl text-white/60 font-light mt-2 inline-block mx-2">touch point 😉</span>
             </h2>
             <div className={`absolute -top-4 -left-4 flex gap-2 transition-all duration-300 ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'}`}>
               <button onClick={handleEdit} className="p-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-lg shadow-blue-500/30 transition-transform hover:scale-110" title="تعديل"><svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" /></svg></button>
@@ -503,7 +508,7 @@ export default function App() {
           return null;
         }
       };
-      setAssets({ frame: await imageToDataUrl('/christmass-hat.png'), logo: await imageToDataUrl() });
+      setAssets({ frame: null, logo: await imageToDataUrl('/YOUTH  Meeting-19.png') });
 
       try {
         const dbPhotos = await getAllPhotos();
@@ -598,12 +603,6 @@ export default function App() {
       }
       ctx.filter = 'none'; // Reset filter
 
-      // 2. Draw Frame
-      const frameImg = await loadImage(assets.frame);
-      if (frameImg) {
-        ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
-      }
-
       // 3. Draw Logo
       // const logoImg = await loadImage(assets.logo);
       // if (logoImg) {
@@ -650,7 +649,7 @@ export default function App() {
       });
 
       await navigator.share({
-        title: "صورتي من Christmas Booth",
+        title: "صورتي من Birthday Booth",
         text: "لقد التقطت صورة رائعة!",
         files: [file],
       });
@@ -734,7 +733,7 @@ export default function App() {
 
       await navigator.share({
         files: files,
-        title: "صوري من Christmas Booth",
+        title: "صوري من Birthday Booth",
         text: "شوف الصور اللي صورتها!",
       });
     } catch (error) {
@@ -790,13 +789,6 @@ export default function App() {
         }
         ctx.drawImage(video, offsetX, offsetY, scaledW, scaledH);
         ctx.restore();
-
-        // دمج الفريم مع الفيديو في نفس الصورة (حل نهائي للايفون)
-        const frameImg = document.getElementById('frame-overlay');
-        if (frameImg) {
-          ctx.drawImage(frameImg, 0, 0, cw, ch);
-          frameImg.style.visibility = 'hidden'; // إخفاء الفريم الأصلي مؤقتاً
-        }
 
         // تحويل الكانفاس لصورة PNG
         const frameData = canvas.toDataURL('image/png');
@@ -884,10 +876,7 @@ export default function App() {
       if (video) {
         video.style.display = originalDisplay;
       }
-      const frameImg = document.getElementById('frame-overlay');
-      if (frameImg) {
-        frameImg.style.visibility = 'visible';
-      }
+
       if (mainContainer) {
         mainContainer.classList.remove('screenshot-mode');
       }
@@ -896,32 +885,35 @@ export default function App() {
 
   return (
     <>
-      <div id="main-container" className="min-h-screen bg-gradient-to-br from-gray-800 via-red-950 to-gray-900 text-white flex flex-col items-center p-6 ">
+      <div id="main-container" className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-black text-white flex flex-col items-center p-6 ">
         <div className="relative z-10 flex items-center justify-center gap-6 mb-8 py-6">
-          {/* Stylish Tree Icon */}
+          {/* Stylish Cake Icon */}
           <div className="relative group animate-bounce" style={{ animationDuration: '3s' }}>
-            <div className="absolute inset-0 bg-green-500/30 blur-xl rounded-full opacity-60"></div>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-12 h-12 md:w-16 md:h-16 text-green-400 drop-shadow-[0_0_15px_rgba(74,222,128,0.6)]">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 3L4 19h16L12 3z" fill="rgba(34, 197, 94, 0.2)" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 3l4 8H8l4-8z" fill="rgba(34, 197, 94, 0.4)" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19v3" />
+            <div className="absolute inset-0 bg-blue-500/30 blur-xl rounded-full opacity-60"></div>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-12 h-12 md:w-16 md:h-16 text-blue-400 drop-shadow-[0_0_15px_rgba(56,189,248,0.6)]">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="rgba(56, 189, 248, 0.2)" />
+              <rect x="8" y="12" width="8" height="8" rx="1" fill="currentColor" />
+              <circle cx="10" cy="14" r="1" fill="white" />
+              <circle cx="14" cy="14" r="1" fill="white" />
+              <circle cx="12" cy="16" r="1" fill="white" />
             </svg>
           </div>
 
           {/* Glassy Gradient Text */}
           <div className="relative px-10 py-4 rounded-3xl bg-white/5 backdrop-blur-md border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)] overflow-hidden group hover:bg-white/10 transition-all duration-500">
             <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent opacity-50"></div>
-            <h1 className="relative text-6xl md:text-8xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-red-600 to-green-500 drop-shadow-sm transition-all duration-300 group-hover:scale-105" dir="rtl">
-              كليشيه
+            <h1 className="relative text-6xl md:text-8xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-white via-blue-100 to-blue-300 drop-shadow-sm transition-all duration-300 group-hover:scale-105" dir="rtl">
+              touch point
             </h1>
           </div>
 
-          {/* Stylish Star Icon */}
+          {/* Stylish Balloon Icon */}
           <div className="relative group animate-pulse" style={{ animationDuration: '4s' }}>
-            <div className="absolute inset-0 bg-yellow-500/30 blur-xl rounded-full opacity-60"></div>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-12 h-12 md:w-16 md:h-16 text-yellow-400 drop-shadow-[0_0_15px_rgba(250,204,21,0.6)]">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="rgba(250, 204, 21, 0.2)" />
-              <circle cx="12" cy="12" r="1" fill="currentColor" className="animate-ping" />
+            <div className="absolute inset-0 bg-sky-500/30 blur-xl rounded-full opacity-60"></div>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-12 h-12 md:w-16 md:h-16 text-sky-400 drop-shadow-[0_0_15px_rgba(56,189,248,0.6)]">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 2c-1.5 0-3 1-3 3v8c0 2 1.5 3 3 3s3-1 3-3V5c0-2-1.5-3-3-3z" fill="rgba(56, 189, 248, 0.2)" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 14v6" />
+              <circle cx="12" cy="20" r="1" fill="currentColor" />
             </svg>
           </div>
         </div>
@@ -982,7 +974,6 @@ export default function App() {
           </section>
         </div>
 
-        <Snowfall />
         <GlobalStyles />
         <canvas ref={canvasRef} className="hidden" />
         <PhotoModal modalPhoto={modalPhoto} onClose={() => setModalPhoto(null)} onDownload={downloadOne} onDelete={() => { if (modalPhoto) deleteOne(modalPhoto.photo.id); setModalPhoto(null); }} onShare={sharePhoto} isShareSupported={isShareSupported}
