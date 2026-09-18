@@ -1,0 +1,158 @@
+.intro-carousel-wrapper {
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: #020617; /* dark slate background */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  z-index: 9999;
+}
+
+.intro-carousel-wrapper .inner {
+  --w: 120px;
+  --h: 180px;
+  --translateZ: calc((var(--w) + var(--h)) + 40px);
+  position: relative;
+  width: var(--w);
+  height: var(--h);
+  transform-style: preserve-3d;
+  /* Smoothly transitions the rotateY when state changes */
+  transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.intro-carousel-wrapper .card {
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  /* overflow: hidden removed so card-number can appear outside */
+  /* Normal unselected cards */
+  transform: rotateY(calc((360deg / var(--quantity)) * var(--index))) translateZ(var(--translateZ)) scale(1);
+  transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.8s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.8);
+}
+
+/* Active card: closer to the user and glowing shadow */
+.intro-carousel-wrapper .card.active {
+  /* Pops out towards the camera */
+  transform: rotateY(calc((360deg / var(--quantity)) * var(--index))) translateZ(calc(var(--translateZ) + 40px)) scale(1.3);
+  box-shadow: 0 0 40px rgba(255, 255, 255, 0.3), 0 0 20px rgba(255, 255, 255, 0.2);
+  z-index: 10;
+}
+
+.intro-carousel-wrapper .card .card-number {
+  position: absolute;
+  top: -30px;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  color: white;
+  font-size: 1.5rem;
+  font-weight: bold;
+  z-index: 5;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.intro-carousel-wrapper .card.active .card-number {
+  opacity: 1;
+}
+
+.intro-carousel-wrapper .card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 12px;
+}
+
+/* Deep black shadow over inactive cards */
+.intro-carousel-wrapper .card .blackshadow-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8); /* heavy black shadow */
+  transition: opacity 0.8s ease;
+  pointer-events: none;
+  border-radius: 12px;
+}
+
+/* Remove shadow when active */
+.intro-carousel-wrapper .card.active .blackshadow-overlay {
+  opacity: 0;
+}
+
+/* --- Fast Spin & Disappear Modes --- */
+/* Takes over the transform to animate seamlessly from the last position (-337.5deg) */
+.intro-carousel-wrapper.spin .inner,
+.intro-carousel-wrapper.disappear .inner {
+  animation: fast-spin 3s linear infinite;
+}
+
+.intro-carousel-wrapper.spin .card .blackshadow-overlay,
+.intro-carousel-wrapper.disappear .card .blackshadow-overlay {
+  opacity: 0; /* All cards brighten up */
+  transition: opacity 0.5s ease;
+}
+
+.intro-carousel-wrapper.spin .card,
+.intro-carousel-wrapper.disappear .card {
+  box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1);
+  /* Shrink cards and radius */
+  transform: rotateY(calc((360deg / var(--quantity)) * var(--index))) translateZ(calc(var(--translateZ) * 0.5)) scale(0.6);
+  /* smooth shrink */
+  transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.8s ease, opacity 0.5s ease;
+}
+
+.intro-carousel-wrapper.disappear .card {
+  transform: rotateY(calc((360deg / var(--quantity)) * var(--index))) translateZ(calc(var(--translateZ) * 0.5)) scale(0.6) translateY(150vh);
+  opacity: 0;
+  /* staggered transition delay */
+  transition: transform 1s cubic-bezier(0.5, 0, 0.2, 1), opacity 0.8s ease;
+  transition-delay: calc(var(--index) * 0.1s);
+}
+.intro-carousel-wrapper .inner .center-number {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) translateZ(0);
+  color: white;
+  font-size: 8rem;
+  font-weight: bold;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+  text-shadow: 0 4px 20px rgba(0,0,0,0.8);
+}
+
+.intro-carousel-wrapper.spin .inner .center-number {
+  opacity: 1;
+}
+
+.intro-carousel-wrapper.disappear .inner .center-number {
+  transform: translate(-50%, -50%) translateZ(0) translateY(150vh);
+  opacity: 0;
+  /* drops after the last card (15 * 0.1s = 1.5s) */
+  transition: transform 1s cubic-bezier(0.5, 0, 0.2, 1) 1.6s, opacity 0.8s ease 1.6s;
+}
+
+
+@keyframes fast-spin {
+  from {
+    transform: perspective(1200px) rotateX(-10deg) rotateY(-337.5deg);
+  }
+  to {
+    transform: perspective(1200px) rotateX(-10deg) rotateY(calc(-337.5deg - 360deg));
+  }
+}
+
+@media (min-width: 768px) {
+  .intro-carousel-wrapper .inner {
+    --w: 160px;
+    --h: 240px;
+    --translateZ: calc((var(--w) + var(--h)) + 80px);
+  }
+}

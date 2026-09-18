@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import Compressor from 'compressorjs';
 import { getAllPhotos, addPhoto, deletePhoto, deleteAllPhotos as dbDeleteAll } from './db';
+import IntroCarousel from './IntroCarousel';
 
 // --- Custom Hook for Camera Logic ---
 function useCamera(videoRef, facingMode) {
@@ -364,7 +365,7 @@ const ResolutionSection = () => {
           {celebrating && <SimpleConfetti />}
           <div onClick={() => setShowControls(!showControls)} className="relative cursor-pointer group px-8 py-6 bg-gradient-to-r from-white/5 to-white/10 border border-white/10 rounded-3xl backdrop-blur-md shadow-2xl hover:shadow-white/5 transition-all duration-300 transform hover:-translate-y-1">
             <h2 className="text-2xl md:text-3xl font-bold text-center leading-relaxed" dir="rtl">
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-white">"</span><span className="text-white drop-shadow-lg mx-2">{text}</span><span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-white">"</span><br className="md:hidden" /><span className="text-lg md:text-xl text-white/60 font-light mt-2 inline-block mx-2">touch point 😉</span>
+              <span className="text-white">"</span><span className="text-white drop-shadow-lg mx-2">{text}</span><span className="text-white">"</span><br className="md:hidden" /><span className="text-lg md:text-xl text-white/80 font-light mt-2 inline-block mx-2">Orchestra 😉</span>
             </h2>
             <div className={`absolute -top-4 -left-4 flex gap-2 transition-all duration-300 ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'}`}>
               <button onClick={handleEdit} className="p-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-lg shadow-blue-500/30 transition-transform hover:scale-110" title="تعديل"><svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" /></svg></button>
@@ -464,6 +465,7 @@ const GlobalStyles = () => (
 );
 
 export default function App() {
+  const [showIntro, setShowIntro] = useState(true);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const cameraWrapRef = useRef(null);
@@ -995,37 +997,37 @@ export default function App() {
     }
   };
 
+  if (showIntro) {
+    return <IntroCarousel onComplete={() => setShowIntro(false)} />;
+  }
+
   return (
     <>
-      <div id="main-container" className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-black text-white flex flex-col items-center p-6 ">
+      <div id="main-container" className="min-h-screen bg-[#5A0F1B] text-white flex flex-col items-center p-6 ">
         <div className="relative z-10 flex items-center justify-center gap-6 mb-8 py-6">
-          {/* Stylish Cake Icon */}
+          {/* Stylish Music Note Icon */}
           <div className="relative group animate-bounce" style={{ animationDuration: '3s' }}>
-            <div className="absolute inset-0 bg-blue-500/30 blur-xl rounded-full opacity-60"></div>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-12 h-12 md:w-16 md:h-16 text-blue-400 drop-shadow-[0_0_15px_rgba(56,189,248,0.6)]">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="rgba(56, 189, 248, 0.2)" />
-              <rect x="8" y="12" width="8" height="8" rx="1" fill="currentColor" />
-              <circle cx="10" cy="14" r="1" fill="white" />
-              <circle cx="14" cy="14" r="1" fill="white" />
-              <circle cx="12" cy="16" r="1" fill="white" />
+            <div className="absolute inset-0 bg-white/20 blur-xl rounded-full opacity-60"></div>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-12 h-12 md:w-16 md:h-16 text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.6)]">
+              <path d="M9 18V5l12-2v13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <circle cx="6" cy="18" r="3" fill="currentColor" />
+              <circle cx="18" cy="16" r="3" fill="currentColor" />
             </svg>
           </div>
 
           {/* Glassy Gradient Text */}
           <div className="relative px-10 py-4 rounded-3xl bg-white/5 backdrop-blur-md border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)] overflow-hidden group hover:bg-white/10 transition-all duration-500">
             <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent opacity-50"></div>
-            <h1 className="relative text-6xl md:text-8xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-white via-blue-100 to-blue-300 drop-shadow-sm transition-all duration-300 group-hover:scale-105" dir="rtl">
-              touch point
+            <h1 className="relative text-6xl md:text-8xl font-black tracking-tighter text-white drop-shadow-sm transition-all duration-300 group-hover:scale-105" dir="rtl">
+              Orchestra
             </h1>
           </div>
 
-          {/* Stylish Balloon Icon */}
+          {/* Stylish Music Clef Icon */}
           <div className="relative group animate-pulse" style={{ animationDuration: '4s' }}>
-            <div className="absolute inset-0 bg-sky-500/30 blur-xl rounded-full opacity-60"></div>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-12 h-12 md:w-16 md:h-16 text-sky-400 drop-shadow-[0_0_15px_rgba(56,189,248,0.6)]">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 2c-1.5 0-3 1-3 3v8c0 2 1.5 3 3 3s3-1 3-3V5c0-2-1.5-3-3-3z" fill="rgba(56, 189, 248, 0.2)" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 14v6" />
-              <circle cx="12" cy="20" r="1" fill="currentColor" />
+            <div className="absolute inset-0 bg-white/20 blur-xl rounded-full opacity-60"></div>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-12 h-12 md:w-16 md:h-16 text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.6)]">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 18c-2 0-3-1-3-2.5S7.5 13 9 13s2 .5 2 1.5M11 14V6c0-2-1-4-3-4s-3 1-3 2 M9 3c2 0 4 1 5 3s1 4-1 6-4 3-5 5c-1 1-1 3 0 4s2 2 3 2c2 0 3-1 3-2 M11 14v4" />
             </svg>
           </div>
         </div>
