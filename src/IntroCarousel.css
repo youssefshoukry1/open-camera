@@ -12,6 +12,36 @@
   z-index: 9999;
 }
 
+.intro-skip-btn {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 9999px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+  user-select: none;
+}
+
+.intro-skip-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.intro-skip-btn:active {
+  transform: scale(0.95);
+}
+
 .intro-carousel-wrapper .inner {
   --w: 120px;
   --h: 180px;

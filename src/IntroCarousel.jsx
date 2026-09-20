@@ -41,6 +41,18 @@ export default function IntroCarousel({ onComplete }) {
 
   return (
     <div className={`intro-carousel-wrapper ${phase}`}>
+      <button
+        type="button"
+        className="intro-skip-btn"
+        onClick={onComplete}
+        aria-label="Skip intro"
+      >
+        <span>Skip</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="13 17 18 12 13 7" />
+          <polyline points="6 17 11 12 6 7" />
+        </svg>
+      </button>
       <div
         className="inner"
         style={{
