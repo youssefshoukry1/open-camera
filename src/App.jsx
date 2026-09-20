@@ -309,6 +309,10 @@ const SimpleConfetti = () => {
 // --- Global Styles ---
 const GlobalStyles = () => (
   <style>{`
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
+    
+    .font-playfair { font-family: 'Playfair Display', serif; }
+    
     .slider-container { touch-action: none; -webkit-user-select:none; user-select:none; cursor: grab; }
     .slider-track { background: rgba(255,255,255,0.2); box-shadow: inset 0 1px 2px rgba(0,0,0,0.1); border-radius:999px; height:4px; margin:0 auto; width: 100%; }
     .slider-thumb { position: absolute; top:50%; border-radius:50%; background: #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.3); transition: left 100ms ease, transform 100ms ease; width: 20px; height: 20px; cursor: grab; }
@@ -920,31 +924,15 @@ export default function App() {
     <>
       <div id="main-container" className="min-h-screen w-full overflow-x-hidden bg-[#5A0F1B] text-white flex flex-col items-center p-4 sm:p-6 ">
         <div className="relative z-10 flex flex-wrap sm:flex-nowrap items-center justify-center gap-4 sm:gap-6 mb-6 sm:mb-8 py-4 sm:py-6 w-full max-w-full px-2">
-          {/* Stylish Music Note Icon */}
-          <div className="relative group animate-bounce hidden sm:block" style={{ animationDuration: '3s' }}>
-            <div className="absolute inset-0 bg-white/20 blur-xl rounded-full opacity-60"></div>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-10 h-10 md:w-16 md:h-16 text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.6)]">
-              <path d="M9 18V5l12-2v13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              <circle cx="6" cy="18" r="3" fill="currentColor" />
-              <circle cx="18" cy="16" r="3" fill="currentColor" />
-            </svg>
-          </div>
 
           {/* Glassy Gradient Text */}
           <div className="relative px-6 py-3 sm:px-10 sm:py-4 rounded-3xl bg-white/5 backdrop-blur-md border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)] overflow-hidden group hover:bg-white/10 transition-all duration-500 max-w-[95%]">
             <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent opacity-50"></div>
-            <h1 className="relative text-4xl sm:text-6xl md:text-8xl font-black tracking-tighter text-white drop-shadow-sm transition-all duration-300 group-hover:scale-105" dir="rtl">
+            <h1 className="relative font-playfair text-5xl sm:text-7xl md:text-[7rem] lg:text-[8rem] font-black tracking-normal text-transparent bg-clip-text bg-gradient-to-br from-amber-100 via-yellow-400 to-amber-700 drop-shadow-[0_4px_25px_rgba(251,191,36,0.3)] transition-all duration-700 group-hover:scale-105 group-hover:drop-shadow-[0_8px_35px_rgba(251,191,36,0.6)] py-2" dir="rtl">
               Orchestra
             </h1>
           </div>
 
-          {/* Stylish Music Clef Icon */}
-          <div className="relative group animate-pulse hidden sm:block" style={{ animationDuration: '4s' }}>
-            <div className="absolute inset-0 bg-white/20 blur-xl rounded-full opacity-60"></div>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-10 h-10 md:w-16 md:h-16 text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.6)]">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 18c-2 0-3-1-3-2.5S7.5 13 9 13s2 .5 2 1.5M11 14V6c0-2-1-4-3-4s-3 1-3 2 M9 3c2 0 4 1 5 3s1 4-1 6-4 3-5 5c-1 1-1 3 0 4s2 2 3 2c2 0 3-1 3-2 M11 14v4" />
-            </svg>
-          </div>
         </div>
 
         <div className="flex flex-col lg:flex-row gap-8 w-full max-w-6xl relative z-10">
