@@ -306,78 +306,6 @@ const SimpleConfetti = () => {
   return <div className="absolute inset-0 pointer-events-none z-[100] overflow-visible">{particles}</div>;
 };
 
-// --- Resolution Section Component ---
-const ResolutionSection = () => {
-  const [text, setText] = useState(() => localStorage.getItem('resolutionText') || "");
-  const [isEditing, setIsEditing] = useState(() => !localStorage.getItem('resolutionText'));
-  const [showControls, setShowControls] = useState(false);
-  const [showHint, setShowHint] = useState(false);
-  const [celebrating, setCelebrating] = useState(false);
-
-  useEffect(() => {
-    localStorage.setItem('resolutionText', text);
-  }, [text]);
-
-  const handleSave = () => {
-    if (text.trim()) {
-      setIsEditing(false);
-      setShowControls(false);
-      setCelebrating(true);
-      setTimeout(() => setCelebrating(false), 2000);
-    }
-  };
-
-  const handleEdit = (e) => {
-    e.stopPropagation();
-    setIsEditing(true);
-    setShowControls(false);
-  };
-
-  const handleDelete = (e) => {
-    e.stopPropagation();
-    setText("");
-    setIsEditing(true);
-    setShowControls(false);
-  };
-
-  return (
-    <div className="w-full max-w-xl mx-auto mb-8 relative z-20 flex flex-col items-center">
-      {isEditing ? (
-        <div className="w-full flex flex-col items-center gap-2 animate-fade-in">
-          <div className="relative w-full max-w-md group">
-            <textarea value={text} onChange={(e) => setText(e.target.value)} onFocus={() => setShowHint(true)} placeholder="لو ربنا سامعك دلوقتي... تحب تقوله ايه في ميلاده ؟" className="w-full h-24 p-4 text-center bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl backdrop-blur-md text-white placeholder-white/40 focus:outline-none focus:border-white/30 focus:bg-white/10 transition-all resize-none shadow-lg" dir="rtl" maxLength={100} />
-            {text.trim() && (
-              <button onClick={handleSave} className="absolute bottom-3 left-3 p-2 bg-green-500/20 hover:bg-green-500/40 text-green-200 rounded-lg transition-all backdrop-blur-sm" title="حفظ">
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
-              </button>
-            )}
-          </div>
-          {showHint ? (
-            <div className="mt-2 px-4 py-2 bg-yellow-500/10 border border-yellow-500/20 rounded-xl text-yellow-100 text-xs md:text-sm text-center hint-box backdrop-blur-md flex items-center justify-center gap-2 max-w-md">
-              <span>اكتب وخد وضعية واتصور سكرين شوت مع هدفك، الزرار تحت جمب زرار الكاميرا</span>
-            </div>
-          ) : (
-            <p className="text-white/50 text-sm font-light">يلا اكتب هاتقوله ايه ✨</p>
-          )}
-        </div>
-      ) : (
-        <div className="flex flex-col items-center gap-4 animate-fade-in w-full">
-          {celebrating && <SimpleConfetti />}
-          <div onClick={() => setShowControls(!showControls)} className="relative cursor-pointer group px-8 py-6 bg-gradient-to-r from-white/5 to-white/10 border border-white/10 rounded-3xl backdrop-blur-md shadow-2xl hover:shadow-white/5 transition-all duration-300 transform hover:-translate-y-1">
-            <h2 className="text-2xl md:text-3xl font-bold text-center leading-relaxed" dir="rtl">
-              <span className="text-white">"</span><span className="text-white drop-shadow-lg mx-2">{text}</span><span className="text-white">"</span><br className="md:hidden" /><span className="text-lg md:text-xl text-white/80 font-light mt-2 inline-block mx-2">Orchestra 😉</span>
-            </h2>
-            <div className={`absolute -top-4 -left-4 flex gap-2 transition-all duration-300 ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'}`}>
-              <button onClick={handleEdit} className="p-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-lg shadow-blue-500/30 transition-transform hover:scale-110" title="تعديل"><svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" /></svg></button>
-              <button onClick={handleDelete} className="p-2.5 bg-red-500 hover:bg-red-600 text-white rounded-full shadow-lg shadow-red-500/30 transition-transform hover:scale-110" title="حذف"><svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" /></svg></button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
 // --- Global Styles ---
 const GlobalStyles = () => (
   <style>{`
@@ -1019,8 +947,6 @@ export default function App() {
           </div>
         </div>
 
-        <ResolutionSection />
-
         <div className="flex flex-col lg:flex-row gap-8 w-full max-w-6xl relative z-10">
           <div id="camera-column" className="flex flex-col items-center">
             <CameraView
@@ -1081,18 +1007,12 @@ export default function App() {
         />
 
         <footer id="app-footer" className="w-full mt-8 flex justify-center pb-6">
-          <div className="w-full max-w-6xl footer-glass px-6 py-4 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="w-full max-w-6xl footer-glass px-6 py-4 rounded-2xl flex flex-col md:flex-row items-center justify-center gap-4">
             <div className="text-sm text-white/80 flex items-center gap-3">
               <span>Developed by</span>
               <a href="https://youssef-portfolio-1.vercel.app" target="_blank" rel="noopener noreferrer" className="group relative px-4 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_0_15px_rgba(255,255,255,0.1)] flex items-center gap-2">
                 <span className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-purple-300 group-hover:from-white group-hover:to-white transition-all">Youssef Shoukry</span>
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 text-white/50 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" /></svg>
-              </a>
-            </div>
-            <div className="text-sm">
-              <a href="tel:01204470794" className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white/90 font-mono transition-all hover:scale-105 active:scale-95">
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 opacity-70" viewBox="0 0 20 20" fill="currentColor"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" /></svg>
-                01204470794
               </a>
             </div>
           </div>
