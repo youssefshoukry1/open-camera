@@ -15,9 +15,9 @@ function useCamera(videoRef, facingMode) {
       try {
         stream = await navigator.mediaDevices.getUserMedia({
           video: {
-            facingMode,
-            width: { ideal: 4096 }, // طلب أعلى دقة عرض ممكنة (4K)
-            height: { ideal: 2160 } // طلب أعلى دقة طول ممكنة
+            facingMode: { ideal: facingMode },
+            width: { ideal: 1280 }, // طلب دقة أقل (720p) لضمان الأداء وفتح الكاميرا
+            height: { ideal: 720 }
           },
           audio: false,
         });
@@ -151,8 +151,8 @@ const CameraView = ({
   };
 
   return (
-    <div className="flex-shrink-0 w-full lg:w-96 flex flex-col items-center">
-      <div ref={cameraWrapRef} className="relative w-80 h-[569px] rounded-3xl overflow-hidden shadow-2xl">
+    <div className="flex-shrink-0 w-full lg:w-96 flex flex-col items-center px-2 sm:px-0">
+      <div ref={cameraWrapRef} className="relative w-full max-w-sm aspect-[9/16] h-auto rounded-3xl overflow-hidden shadow-2xl bg-black/80">
         <video
           ref={videoRef}
           autoPlay
@@ -685,25 +685,12 @@ export default function App() {
       }
       ctx.closePath();
 
-      // A. Apply Backdrop Blur (Glass Effect)
+      // A. Apply Solid Background (Replaces heavy glass effect)
       ctx.save();
       ctx.clip();
-      ctx.filter = `blur(${12 * scale}px)`; // backdrop-blur-md
-      // Redraw video into clipped area to create blur
-      if (isMirrored) {
-        ctx.save();
-        ctx.translate(canvas.width, 0);
-        ctx.scale(-1, 1);
-        ctx.drawImage(video, startX, startY, drawW, drawH, 0, 0, canvas.width, canvas.height);
-        ctx.restore();
-      } else {
-        ctx.drawImage(video, startX, startY, drawW, drawH, 0, 0, canvas.width, canvas.height);
-      }
-      ctx.restore();
-
+      
       // B. Draw Box Background, Border, and Shadow
-      ctx.save();
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.4)'; // bg-black/40
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.65)'; // bg-black/65 for better readability without blur
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)'; // border-white/20
       ctx.lineWidth = 1 * scale;
       ctx.shadowColor = 'rgba(0, 0, 0, 0.3)'; // shadow-lg
@@ -1003,30 +990,30 @@ export default function App() {
 
   return (
     <>
-      <div id="main-container" className="min-h-screen bg-[#5A0F1B] text-white flex flex-col items-center p-6 ">
-        <div className="relative z-10 flex items-center justify-center gap-6 mb-8 py-6">
+      <div id="main-container" className="min-h-screen w-full overflow-x-hidden bg-[#5A0F1B] text-white flex flex-col items-center p-4 sm:p-6 ">
+        <div className="relative z-10 flex flex-wrap sm:flex-nowrap items-center justify-center gap-4 sm:gap-6 mb-6 sm:mb-8 py-4 sm:py-6 w-full max-w-full px-2">
           {/* Stylish Music Note Icon */}
-          <div className="relative group animate-bounce" style={{ animationDuration: '3s' }}>
+          <div className="relative group animate-bounce hidden sm:block" style={{ animationDuration: '3s' }}>
             <div className="absolute inset-0 bg-white/20 blur-xl rounded-full opacity-60"></div>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-12 h-12 md:w-16 md:h-16 text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.6)]">
-              <path d="M9 18V5l12-2v13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-10 h-10 md:w-16 md:h-16 text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.6)]">
+              <path d="M9 18V5l12-2v13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               <circle cx="6" cy="18" r="3" fill="currentColor" />
               <circle cx="18" cy="16" r="3" fill="currentColor" />
             </svg>
           </div>
 
           {/* Glassy Gradient Text */}
-          <div className="relative px-10 py-4 rounded-3xl bg-white/5 backdrop-blur-md border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)] overflow-hidden group hover:bg-white/10 transition-all duration-500">
+          <div className="relative px-6 py-3 sm:px-10 sm:py-4 rounded-3xl bg-white/5 backdrop-blur-md border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)] overflow-hidden group hover:bg-white/10 transition-all duration-500 max-w-[95%]">
             <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent opacity-50"></div>
-            <h1 className="relative text-6xl md:text-8xl font-black tracking-tighter text-white drop-shadow-sm transition-all duration-300 group-hover:scale-105" dir="rtl">
+            <h1 className="relative text-4xl sm:text-6xl md:text-8xl font-black tracking-tighter text-white drop-shadow-sm transition-all duration-300 group-hover:scale-105" dir="rtl">
               Orchestra
             </h1>
           </div>
 
           {/* Stylish Music Clef Icon */}
-          <div className="relative group animate-pulse" style={{ animationDuration: '4s' }}>
+          <div className="relative group animate-pulse hidden sm:block" style={{ animationDuration: '4s' }}>
             <div className="absolute inset-0 bg-white/20 blur-xl rounded-full opacity-60"></div>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-12 h-12 md:w-16 md:h-16 text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.6)]">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-10 h-10 md:w-16 md:h-16 text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.6)]">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 18c-2 0-3-1-3-2.5S7.5 13 9 13s2 .5 2 1.5M11 14V6c0-2-1-4-3-4s-3 1-3 2 M9 3c2 0 4 1 5 3s1 4-1 6-4 3-5 5c-1 1-1 3 0 4s2 2 3 2c2 0 3-1 3-2 M11 14v4" />
             </svg>
           </div>
