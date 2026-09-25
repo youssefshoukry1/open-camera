@@ -12,7 +12,7 @@ export default function IntroCarousel({ onComplete }) {
   useEffect(() => {
     if (phase === 'flow') {
       const startTime = Date.now();
-      const HIGHLIGHT_OFFSET = 0.35; // Trigger highlight early to compensate for CSS transition
+      const HIGHLIGHT_OFFSET = 0.55; // Higher offset for mobile compensation
       const interval = setInterval(() => {
         const elapsed = (Date.now() - startTime) / 1000;
         const adjusted = elapsed + HIGHLIGHT_OFFSET;

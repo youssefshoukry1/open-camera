@@ -62,7 +62,7 @@
   inset: 0;
   border-radius: 12px;
   transform: rotateY(calc((360deg / var(--quantity)) * var(--index))) translateZ(var(--translateZ)) scale(1);
-  transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.5s ease;
+  transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.3s ease;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.8);
 }
 
