@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import './IntroCarousel.css';
 
-const NUM_IMAGES = 16;
-const images = Array.from({ length: NUM_IMAGES }, (_, i) => `/images/${i + 1}.jpeg`);
+const NUM_IMAGES = 20;
+const images = Array.from({ length: NUM_IMAGES }, (_, i) => `/images/${i + 1}.webp`);
 
 export default function IntroCarousel({ onComplete }) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -61,7 +61,7 @@ export default function IntroCarousel({ onComplete }) {
           ...(phase === 'flow' ? { transform: `perspective(1200px) rotateX(-10deg) rotateY(${rotationY}deg)` } : {})
         }}
       >
-        <div className="center-number">16</div>
+        <div className="center-number">20</div>
         {images.map((src, idx) => {
           const isActive = phase === 'flow' && idx === currentIndex;
           return (

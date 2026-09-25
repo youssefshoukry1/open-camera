@@ -4,12 +4,14 @@ import { getAllPhotos, addPhoto, deletePhoto, deleteAllPhotos as dbDeleteAll } f
 import IntroCarousel from './IntroCarousel';
 
 // --- Custom Hook for Camera Logic ---
-function useCamera(videoRef, facingMode) {
+function useCamera(videoRef, facingMode, skip = false) {
   const [brightness, setBrightness] = useState(0.5);
 
   useEffect(() => {
     let mounted = true;
     let stream = null;
+
+    if (skip) return;
 
     async function start() {
       try {
@@ -38,7 +40,7 @@ function useCamera(videoRef, facingMode) {
         videoRef.current.srcObject = null;
       }
     };
-  }, [facingMode, videoRef]);
+  }, [facingMode, videoRef, skip]);
 
   const setBrightnessValue = (val) => {
     const v = Math.max(0, Math.min(1, val));
@@ -413,7 +415,7 @@ export default function App() {
   const [isShareSupported, setIsShareSupported] = useState(false);
   const [assets, setAssets] = useState({ frame: null, logo: null });
 
-  const { brightness, setBrightnessValue, handleFocus } = useCamera(videoRef, facingMode);
+  const { brightness, setBrightnessValue, handleFocus } = useCamera(videoRef, facingMode, showIntro);
 
   useEffect(() => {
     // Check for Web Share API support
